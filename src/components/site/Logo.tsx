@@ -1,0 +1,40 @@
+import { Link } from "@tanstack/react-router";
+import { site } from "@/lib/site";
+import { cn } from "@/lib/utils";
+
+export function Logo({ onDark = false, className }: { onDark?: boolean; className?: string }) {
+  return (
+    <Link
+      to="/"
+      aria-label={`${site.name} home`}
+      className={cn("group flex items-center gap-3", className)}
+    >
+      <span
+        className={cn(
+          "grid size-11 place-items-center rounded-xl font-display text-lg font-extrabold shadow-[var(--shadow-card)] transition-transform group-hover:scale-105",
+          onDark ? "bg-background text-primary" : "bg-hero-gradient text-primary-foreground",
+        )}
+      >
+        LD
+      </span>
+      <span className="flex flex-col leading-none">
+        <span
+          className={cn(
+            "font-display text-[0.95rem] font-extrabold tracking-tight sm:text-[1.05rem]",
+            onDark ? "text-primary-foreground" : "text-foreground",
+          )}
+        >
+          LAXMI <span className="text-accent">DRIVING</span> TRAINING
+        </span>
+        <span
+          className={cn(
+            "mt-1 text-[0.62rem] font-semibold tracking-[0.22em]",
+            onDark ? "text-primary-foreground/70" : "text-muted-foreground",
+          )}
+        >
+          {site.domain}
+        </span>
+      </span>
+    </Link>
+  );
+}
