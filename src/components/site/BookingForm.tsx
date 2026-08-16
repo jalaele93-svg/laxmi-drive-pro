@@ -263,8 +263,8 @@ function Field({
 }: {
   label: string;
   htmlFor: string;
-  error?: string;
-  required?: boolean;
+  error?: string | undefined;
+  required?: boolean | undefined;
   children: React.ReactNode;
 }) {
   return (
