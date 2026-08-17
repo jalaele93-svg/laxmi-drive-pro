@@ -26,7 +26,7 @@ export const Route = createFileRoute("/car-training")({
     ],
     links: [{ rel: "canonical", href: "/car-training" }],
   }),
-  component: CarTraining;
+  component: CarTraining,
 });
 
 function CarTraining() {
