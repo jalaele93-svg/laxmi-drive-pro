@@ -10,33 +10,167 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as BikeTrainingRouteImport } from './routes/bike-training'
+import { Route as BookRouteImport } from './routes/book'
+import { Route as CarTrainingRouteImport } from './routes/car-training'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as FaqRouteImport } from './routes/faq'
+import { Route as InstructorsRouteImport } from './routes/instructors'
+import { Route as SafetyRulesRouteImport } from './routes/safety-rules'
+import { Route as TestimonialsRouteImport } from './routes/testimonials'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BikeTrainingRoute = BikeTrainingRouteImport.update({
+  id: '/bike-training',
+  path: '/bike-training',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookRoute = BookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarTrainingRoute = CarTrainingRouteImport.update({
+  id: '/car-training',
+  path: '/car-training',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesRoute = CoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstructorsRoute = InstructorsRouteImport.update({
+  id: '/instructors',
+  path: '/instructors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SafetyRulesRoute = SafetyRulesRouteImport.update({
+  id: '/safety-rules',
+  path: '/safety-rules',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TestimonialsRoute = TestimonialsRouteImport.update({
+  id: '/testimonials',
+  path: '/testimonials',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/bike-training': typeof BikeTrainingRoute
+  '/book': typeof BookRoute
+  '/car-training': typeof CarTrainingRoute
+  '/contact': typeof ContactRoute
+  '/courses': typeof CoursesRoute
+  '/faq': typeof FaqRoute
+  '/instructors': typeof InstructorsRoute
+  '/safety-rules': typeof SafetyRulesRoute
+  '/testimonials': typeof TestimonialsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/bike-training': typeof BikeTrainingRoute
+  '/book': typeof BookRoute
+  '/car-training': typeof CarTrainingRoute
+  '/contact': typeof ContactRoute
+  '/courses': typeof CoursesRoute
+  '/faq': typeof FaqRoute
+  '/instructors': typeof InstructorsRoute
+  '/safety-rules': typeof SafetyRulesRoute
+  '/testimonials': typeof TestimonialsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/bike-training': typeof BikeTrainingRoute
+  '/book': typeof BookRoute
+  '/car-training': typeof CarTrainingRoute
+  '/contact': typeof ContactRoute
+  '/courses': typeof CoursesRoute
+  '/faq': typeof FaqRoute
+  '/instructors': typeof InstructorsRoute
+  '/safety-rules': typeof SafetyRulesRoute
+  '/testimonials': typeof TestimonialsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/bike-training'
+    | '/book'
+    | '/car-training'
+    | '/contact'
+    | '/courses'
+    | '/faq'
+    | '/instructors'
+    | '/safety-rules'
+    | '/testimonials'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/about'
+    | '/bike-training'
+    | '/book'
+    | '/car-training'
+    | '/contact'
+    | '/courses'
+    | '/faq'
+    | '/instructors'
+    | '/safety-rules'
+    | '/testimonials'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/bike-training'
+    | '/book'
+    | '/car-training'
+    | '/contact'
+    | '/courses'
+    | '/faq'
+    | '/instructors'
+    | '/safety-rules'
+    | '/testimonials'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  BikeTrainingRoute: typeof BikeTrainingRoute
+  BookRoute: typeof BookRoute
+  CarTrainingRoute: typeof CarTrainingRoute
+  ContactRoute: typeof ContactRoute
+  CoursesRoute: typeof CoursesRoute
+  FaqRoute: typeof FaqRoute
+  InstructorsRoute: typeof InstructorsRoute
+  SafetyRulesRoute: typeof SafetyRulesRoute
+  TestimonialsRoute: typeof TestimonialsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +182,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bike-training': {
+      id: '/bike-training'
+      path: '/bike-training'
+      fullPath: '/bike-training'
+      preLoaderRoute: typeof BikeTrainingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/book': {
+      id: '/book'
+      path: '/book'
+      fullPath: '/book'
+      preLoaderRoute: typeof BookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/car-training': {
+      id: '/car-training'
+      path: '/car-training'
+      fullPath: '/car-training'
+      preLoaderRoute: typeof CarTrainingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses': {
+      id: '/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instructors': {
+      id: '/instructors'
+      path: '/instructors'
+      fullPath: '/instructors'
+      preLoaderRoute: typeof InstructorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/safety-rules': {
+      id: '/safety-rules'
+      path: '/safety-rules'
+      fullPath: '/safety-rules'
+      preLoaderRoute: typeof SafetyRulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/testimonials': {
+      id: '/testimonials'
+      path: '/testimonials'
+      fullPath: '/testimonials'
+      preLoaderRoute: typeof TestimonialsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  BikeTrainingRoute: BikeTrainingRoute,
+  BookRoute: BookRoute,
+  CarTrainingRoute: CarTrainingRoute,
+  ContactRoute: ContactRoute,
+  CoursesRoute: CoursesRoute,
+  FaqRoute: FaqRoute,
+  InstructorsRoute: InstructorsRoute,
+  SafetyRulesRoute: SafetyRulesRoute,
+  TestimonialsRoute: TestimonialsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
