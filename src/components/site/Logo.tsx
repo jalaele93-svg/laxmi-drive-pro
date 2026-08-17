@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { site } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/logo.png.asset.json";
+
 
 export function Logo({ onDark = false, className }: { onDark?: boolean; className?: string }) {
   return (
