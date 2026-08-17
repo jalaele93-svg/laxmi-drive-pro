@@ -9,34 +9,19 @@ export function Logo({ onDark = false, className }: { onDark?: boolean; classNam
     <Link
       to="/"
       aria-label={`${site.name} home`}
-      className={cn("group flex items-center gap-3", className)}
+      className={cn("group flex items-center", className)}
     >
       <img
         src={logoAsset.url}
-        alt=""
-        className="h-11 w-auto rounded-xl shadow-[var(--shadow-card)] transition-transform group-hover:scale-105"
+        alt="Laxmi Driving Training logo"
+        className={cn(
+          "h-12 w-auto rounded-xl transition-transform duration-300 group-hover:scale-105",
+          onDark ? "bg-white" : "shadow-[var(--shadow-card)]",
+        )}
         loading="eager"
         decoding="async"
       />
-      <span className="flex flex-col leading-none">
-
-        <span
-          className={cn(
-            "font-display text-[0.95rem] font-extrabold tracking-tight sm:text-[1.05rem]",
-            onDark ? "text-primary-foreground" : "text-foreground",
-          )}
-        >
-          LAXMI <span className="text-accent">DRIVING</span> TRAINING
-        </span>
-        <span
-          className={cn(
-            "mt-1 text-[0.62rem] font-semibold tracking-[0.22em]",
-            onDark ? "text-primary-foreground/70" : "text-muted-foreground",
-          )}
-        >
-          {site.domain}
-        </span>
-      </span>
     </Link>
   );
 }
+
