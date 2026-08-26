@@ -21,6 +21,7 @@ import { Route as FaqRouteImport } from './routes/faq'
 import { Route as InstructorsRouteImport } from './routes/instructors'
 import { Route as SafetyRulesRouteImport } from './routes/safety-rules'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -82,11 +83,16 @@ const TestimonialsRoute = TestimonialsRouteImport.update({
   path: '/testimonials',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/bike-training': typeof BikeTrainingRoute
   '/book': typeof BookRoute
   '/car-training': typeof CarTrainingRoute
@@ -96,11 +102,11 @@ export interface FileRoutesByFullPath {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
   '/bike-training': typeof BikeTrainingRoute
   '/book': typeof BookRoute
   '/car-training': typeof CarTrainingRoute
@@ -110,12 +116,13 @@ export interface FileRoutesByTo {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/bike-training': typeof BikeTrainingRoute
   '/book': typeof BookRoute
   '/car-training': typeof CarTrainingRoute
@@ -125,6 +132,7 @@ export interface FileRoutesById {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,11 +149,11 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/admin'
     | '/bike-training'
     | '/book'
     | '/car-training'
@@ -155,6 +163,7 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -169,12 +178,13 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   BikeTrainingRoute: typeof BikeTrainingRoute
   BookRoute: typeof BookRoute
   CarTrainingRoute: typeof CarTrainingRoute
@@ -272,13 +282,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TestimonialsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   BikeTrainingRoute: BikeTrainingRoute,
   BookRoute: BookRoute,
   CarTrainingRoute: CarTrainingRoute,
