@@ -22,7 +22,13 @@ import { Route as InstructorsRouteImport } from './routes/instructors'
 import { Route as SafetyRulesRouteImport } from './routes/safety-rules'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAllocationRouteImport } from './routes/admin.allocation'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminDriversRouteImport } from './routes/admin.drivers'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -89,9 +95,39 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAllocationRoute = AdminAllocationRouteImport.update({
+  id: '/allocation',
+  path: '/allocation',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDriversRoute = AdminDriversRouteImport.update({
+  id: '/drivers',
+  path: '/drivers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
 
@@ -108,7 +144,13 @@ export interface FileRoutesByFullPath {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -123,7 +165,13 @@ export interface FileRoutesByTo {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -140,7 +188,13 @@ export interface FileRoutesById {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -158,7 +212,13 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin/allocation'
+    | '/admin/customers'
+    | '/admin/drivers'
     | '/admin/orders'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/settings'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -173,7 +233,13 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin/allocation'
+    | '/admin/customers'
+    | '/admin/drivers'
     | '/admin/orders'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/settings'
     | '/admin'
   id:
     | '__root__'
@@ -189,7 +255,13 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin/allocation'
+    | '/admin/customers'
+    | '/admin/drivers'
     | '/admin/orders'
+    | '/admin/payments'
+    | '/admin/reports'
+    | '/admin/settings'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -301,6 +373,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/allocation': {
+      id: '/admin/allocation'
+      path: '/allocation'
+      fullPath: '/admin/allocation'
+      preLoaderRoute: typeof AdminAllocationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/drivers': {
+      id: '/admin/drivers'
+      path: '/drivers'
+      fullPath: '/admin/drivers'
+      preLoaderRoute: typeof AdminDriversRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
@@ -308,16 +401,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminAllocationRoute: typeof AdminAllocationRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminDriversRoute: typeof AdminDriversRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAllocationRoute: AdminAllocationRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
+  AdminDriversRoute: AdminDriversRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
