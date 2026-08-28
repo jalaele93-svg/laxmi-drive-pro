@@ -22,6 +22,7 @@ import { Route as InstructorsRouteImport } from './routes/instructors'
 import { Route as SafetyRulesRouteImport } from './routes/safety-rules'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAllocationRouteImport } from './routes/admin.allocation'
 import { Route as AdminDriversRouteImport } from './routes/admin.drivers'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
@@ -91,6 +92,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAllocationRoute = AdminAllocationRouteImport.update({
+  id: '/allocation',
+  path: '/allocation',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminDriversRoute = AdminDriversRouteImport.update({
   id: '/drivers',
   path: '/drivers',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -156,6 +164,7 @@ export interface FileRoutesById {
   '/instructors': typeof InstructorsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/admin/allocation': typeof AdminAllocationRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -176,6 +185,7 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin/allocation'
     | '/admin/drivers'
     | '/admin/orders'
     | '/admin/payments'
@@ -193,6 +203,7 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin/allocation'
     | '/admin/drivers'
     | '/admin/orders'
     | '/admin/payments'
@@ -211,6 +222,7 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/safety-rules'
     | '/testimonials'
+    | '/admin/allocation'
     | '/admin/drivers'
     | '/admin/orders'
     | '/admin/payments'
@@ -325,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/allocation': {
+      id: '/admin/allocation'
+      path: '/allocation'
+      fullPath: '/admin/allocation'
+      preLoaderRoute: typeof AdminAllocationRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/drivers': {
       id: '/admin/drivers'
       path: '/drivers'
@@ -350,6 +369,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAllocationRoute: typeof AdminAllocationRoute
   AdminDriversRoute: typeof AdminDriversRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
@@ -357,6 +377,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAllocationRoute: AdminAllocationRoute,
   AdminDriversRoute: AdminDriversRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
