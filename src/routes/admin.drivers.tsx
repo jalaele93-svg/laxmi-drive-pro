@@ -18,7 +18,7 @@ export const Route = createFileRoute("/admin/drivers")({
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
-  component: Drivers;
+  component: Drivers,
 });
 
 function Drivers() {
