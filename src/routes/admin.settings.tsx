@@ -138,7 +138,7 @@ function Settings() {
                     </div>
                     <Switch
                       id={t.id}
-                      checked={switches[t.id]}
+                      checked={switches[t.id] ?? false}
                       onCheckedChange={(v) => setSwitches((prev) => ({ ...prev, [t.id]: v }))}
                     />
                   </div>
