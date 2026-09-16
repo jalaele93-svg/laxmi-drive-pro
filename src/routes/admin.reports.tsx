@@ -49,7 +49,7 @@ function Reports() {
             {monthlyBookings.map((m) => {
               const total = m.car + m.bike + m.scooter;
               return (
-                <div key={m.month} className="flex min-w-0 flex-1 flex-col items-center gap-2">
+                <div key={m.month} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
                   <span className="text-xs font-semibold text-foreground">{total}</span>
                   <div
                     className="flex w-full max-w-14 flex-col justify-end overflow-hidden rounded-lg"
