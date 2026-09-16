@@ -48,7 +48,7 @@ function Overview() {
               {monthlyBookings.map((m) => {
                 const total = m.car + m.bike + m.scooter;
                 return (
-                  <div key={m.month} className="flex flex-1 flex-col items-center gap-2">
+                  <div key={m.month} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
                     <div
                       className="flex w-full flex-col justify-end overflow-hidden rounded-t-lg"
                       style={{ height: `${(total / max) * 100}%` }}
