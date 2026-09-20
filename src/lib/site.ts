@@ -255,32 +255,35 @@ export const instructors = [
 export const testimonials = [
   {
     id: 1,
-    name: "[EDIT] Student Name",
+    name: "Muna",
     course: "Car Training — Beginner",
     rating: 5,
     quote:
-      "[EDIT] Paste a real review from your student here. Keep it short and in simple words.",
+      "Excellent driving training. The instructor explained everything patiently and helped me gain confidence on the road.",
   },
   {
     id: 2,
-    name: "[EDIT] Student Name",
-    course: "Scooter Training — Beginner",
+    name: "Gouri",
+    course: "Car Training — Beginner",
     rating: 5,
-    quote: "[EDIT] Paste a real review from your student here.",
+    quote:
+      "Very good experience. I learned car driving from the basics and now I can drive confidently and safely.",
   },
   {
     id: 3,
-    name: "[EDIT] Student Name",
-    course: "Motorcycle Training — Advanced",
+    name: "Tukuna",
+    course: "Car Training — Advanced",
     rating: 5,
-    quote: "[EDIT] Paste a real review from your student here.",
+    quote:
+      "Professional training with practical road experience. The instructor was friendly and supportive throughout the course.",
   },
   {
     id: 4,
-    name: "[EDIT] Student Name",
+    name: "Bishnu Priya",
     course: "Car Training — Advanced",
     rating: 5,
-    quote: "[EDIT] Paste a real review from your student here.",
+    quote:
+      "Great learning experience! The training was easy to understand, and I became much more confident in handling the car.",
   },
 ];
 
