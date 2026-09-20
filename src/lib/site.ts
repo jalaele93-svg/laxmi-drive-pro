@@ -114,7 +114,7 @@ export const courses: Course[] = [
     level: "Beginner",
     title: "Car Training — Beginner",
     price: "₹4,000 – ₹6,000",
-    duration: "[EDIT] 21 days • 21 classes",
+    duration: "21 days • 21 classes",
     summary:
       "For people who have never held a steering wheel. We start slow and build your confidence step by step.",
     features: [
@@ -132,7 +132,7 @@ export const courses: Course[] = [
     level: "Advanced",
     title: "Car Training — Advanced",
     price: "₹3,000 – ₹4,500",
-    duration: "[EDIT] 12 days • 12 classes",
+    duration: "12 days • 12 classes",
     summary:
       "For people who can drive a little but feel nervous in traffic, on highways or while parking.",
     features: [
@@ -149,7 +149,7 @@ export const courses: Course[] = [
     level: "Beginner",
     title: "Motorcycle Training — Beginner",
     price: "₹1,500 – ₹3,000",
-    duration: "[EDIT] 10 days • 10 classes",
+    duration: "10 days • 10 classes",
     summary: "Learn to balance, start, ride and stop a geared motorcycle safely from day one.",
     features: [
       "Balance and slow-speed control",
@@ -165,7 +165,7 @@ export const courses: Course[] = [
     level: "Advanced",
     title: "Motorcycle Training — Advanced",
     price: "₹1,500 – ₹2,000",
-    duration: "[EDIT] 7 days • 7 classes",
+    duration: "7 days • 7 classes",
     summary: "Sharpen your road sense, cornering and emergency braking for confident daily riding.",
     features: [
       "Emergency braking technique",
@@ -181,7 +181,7 @@ export const courses: Course[] = [
     level: "Beginner",
     title: "Scooter Training — Beginner",
     price: "₹1,500 – ₹2,000",
-    duration: "[EDIT] 7 days • 7 classes",
+    duration: "7 days • 7 classes",
     summary:
       "Easy, patient scooter training — a favourite choice for students, homemakers and first-time riders.",
     features: [
@@ -199,7 +199,7 @@ export const courses: Course[] = [
     level: "Advanced",
     title: "Scooter Training — Advanced",
     price: "₹1,000 – ₹1,800",
-    duration: "[EDIT] 5 days • 5 classes",
+    duration: "5 days • 5 classes",
     summary: "Ride comfortably on main roads with better control, awareness and confidence.",
     features: [
       "Main road and flyover riding",
