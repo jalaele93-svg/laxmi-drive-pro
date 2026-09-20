@@ -61,9 +61,8 @@ function Courses() {
             <div className="space-y-1 text-sm text-foreground">
               <p className="font-semibold">Note about fees</p>
               <p className="text-muted-foreground">
-                Prices shown are editable placeholders. Government licence fees, test fees and taxes
-                are not included. Please call us to confirm the current fees, batch timings and any
-                pick-up charges for your area.
+                Government licence fees, test fees and taxes are not included. Please call us to
+                confirm the current fees, batch timings and any pick-up charges for your area.
               </p>
             </div>
           </aside>
