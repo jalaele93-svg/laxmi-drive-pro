@@ -13,18 +13,18 @@ export const site = {
   domain: "LAXMIDRIVING.COM",
   tagline: "Learn Car, Bike & Scooter Driving the Safe Way",
 
-  /** [EDIT] Phone number in international format for click-to-call links */
-  phoneDisplay: "+91 XXXXX XXXXX", // [EDIT] shown on the website
-  phoneLink: "+91XXXXXXXXXX", // [EDIT] used for tel: links
+  /** Phone number for click-to-call links */
+  phoneDisplay: "+91 70088 91923", // shown on the website
+  phoneLink: "+917008891923", // used for tel: links
 
-  /** [EDIT] WhatsApp number, digits only with country code, e.g. 919876543210 */
-  whatsappNumber: "91XXXXXXXXXX",
+  /** WhatsApp number, digits only with country code */
+  whatsappNumber: "917008891923",
   whatsappMessage: "Hello Laxmi Driving Training, I would like to book a driving lesson.",
 
   /** [EDIT] Email address */
   email: "info@laxmidriving.com",
 
-  /** [EDIT] Full address of your training office */
+  /** Head office address (also used in structured data) */
   address: {
     line1: "Plot No.-101, Palaspur (In Front of Budheshwar Temple)",
     line2: "Main Road, PS.-Pattapur",
@@ -33,10 +33,29 @@ export const site = {
     pincode: "761013",
   },
 
-  /** [EDIT] Opening hours */
+  /** All office locations shown on the Contact page and footer */
+  offices: [
+    {
+      label: "Head Office",
+      line1: "Plot No.-101, Palaspur (In Front of Budheshwar Temple)",
+      line2: "Main Road, PS.-Pattapur",
+      city: "Distt.-Ganjam",
+      state: "Odisha",
+      pincode: "761013",
+    },
+    {
+      label: "Branch Office",
+      line1: "Plot No.-107, Raniguda Farm (Near DFO Office)",
+      line2: "PO.-Rayagada, Distt.-Rayagada",
+      city: "Rayagada",
+      state: "Odisha",
+      pincode: "765001",
+    },
+  ],
+
+  /** Opening hours */
   hours: [
-    { days: "Monday – Saturday", time: "[EDIT] 7:00 AM – 7:00 PM" },
-    { days: "Sunday", time: "[EDIT] 8:00 AM – 1:00 PM" },
+    { days: "Monday – Sunday", time: "7:00 AM – 7:00 PM" },
   ],
 
   /**

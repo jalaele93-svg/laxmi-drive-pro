@@ -59,11 +59,12 @@ export function Footer() {
             <li className="flex gap-3">
               <MapPin className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
               <span>
-                {site.address.line1}
-                <br />
-                {site.address.line2}
-                <br />
-                {site.address.city}, {site.address.state} – {site.address.pincode}
+                {site.offices.map((o) => (
+                  <span key={o.label} className="block">
+                    <span className="font-semibold text-primary-foreground">{o.label}:</span>{" "}
+                    {o.line1}, {o.line2}, {o.state} – {o.pincode}
+                  </span>
+                ))}
               </span>
             </li>
             <li className="flex gap-3">
