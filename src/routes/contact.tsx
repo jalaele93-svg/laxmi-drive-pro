@@ -50,12 +50,13 @@ function Contact() {
           <div className="space-y-5">
             <SectionHeading align="left" eyebrow="Reach us" title="Contact details" />
             <ul className="grid gap-4">
-              <ContactRow Icon={MapPin} title="Our office">
-                {site.address.line1}
-                <br />
-                {site.address.line2}
-                <br />
-                {site.address.city}, {site.address.state} – {site.address.pincode}
+              <ContactRow Icon={MapPin} title="Our offices">
+                {site.offices.map((o) => (
+                  <span key={o.label} className="mt-1 block first:mt-0">
+                    <span className="font-semibold text-foreground">{o.label}:</span>{" "}
+                    {o.line1}, {o.line2}, {o.state} – {o.pincode}
+                  </span>
+                ))}
               </ContactRow>
               <ContactRow Icon={Phone} title="Phone">
                 <a href={telHref} className="hover:text-primary">
