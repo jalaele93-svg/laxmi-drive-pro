@@ -26,11 +26,11 @@ export const site = {
 
   /** [EDIT] Full address of your training office */
   address: {
-    line1: "[EDIT] Office / Shop Number, Building Name",
-    line2: "[EDIT] Street / Area Name",
-    city: "[EDIT] City",
-    state: "[EDIT] State",
-    pincode: "[EDIT] PIN Code",
+    line1: "Plot No.-101, Palaspur (In Front of Budheshwar Temple)",
+    line2: "Main Road, PS.-Pattapur",
+    city: "Distt.-Ganjam",
+    state: "Odisha",
+    pincode: "761013",
   },
 
   /** [EDIT] Opening hours */
