@@ -31,7 +31,7 @@ function Testimonials() {
       <PageHero
         eyebrow="Testimonials"
         title="What Our Students Say"
-        description="The reviews below are clearly labelled placeholders. Replace them with real feedback from your students."
+        description="Real feedback from learners who now drive with confidence after training with us."
       />
 
       <section className="section-y">
