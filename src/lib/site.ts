@@ -355,8 +355,8 @@ export const faqs = [
 ];
 
 export const trustStats = [
-  { value: "[EDIT]+", label: "Students trained" },
-  { value: "[EDIT]", label: "Years of teaching" },
+  { value: "10,000+", label: "Students trained" },
+  { value: "7+", label: "Years of teaching" },
   { value: "Dual", label: "Control training car" },
   { value: "7 Days", label: "Batch options a week" },
 ];
