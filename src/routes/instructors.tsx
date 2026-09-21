@@ -31,7 +31,7 @@ function Instructors() {
       <PageHero
         eyebrow="Our team"
         title="Instructors Who Teach with Patience"
-        description="Our trainers explain in simple language, repeat as often as needed and always put safety first. Names below are editable placeholders."
+        description="Our trainers explain in simple language, repeat as often as needed and always put safety first."
       />
 
       <section className="section-y">
