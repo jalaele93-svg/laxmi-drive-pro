@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BikeTrainingRouteImport } from './routes/bike-training'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as CarTrainingRouteImport } from './routes/car-training'
@@ -19,8 +21,11 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as InstructorsRouteImport } from './routes/instructors'
+import { Route as PartnerRouteImport } from './routes/partner'
+import { Route as PartnerTermsRouteImport } from './routes/partner-terms'
 import { Route as SafetyRulesRouteImport } from './routes/safety-rules'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
+import { Route as AuthenticatedPartnerApplyRouteImport } from './routes/_authenticated/partner-apply'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAllocationRouteImport } from './routes/admin.allocation'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
@@ -35,6 +40,10 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -43,6 +52,11 @@ const AboutRoute = AboutRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BikeTrainingRoute = BikeTrainingRouteImport.update({
@@ -80,6 +94,16 @@ const InstructorsRoute = InstructorsRouteImport.update({
   path: '/instructors',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartnerRoute = PartnerRouteImport.update({
+  id: '/partner',
+  path: '/partner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartnerTermsRoute = PartnerTermsRouteImport.update({
+  id: '/partner-terms',
+  path: '/partner-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SafetyRulesRoute = SafetyRulesRouteImport.update({
   id: '/safety-rules',
   path: '/safety-rules',
@@ -90,6 +114,12 @@ const TestimonialsRoute = TestimonialsRouteImport.update({
   path: '/testimonials',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPartnerApplyRoute =
+  AuthenticatedPartnerApplyRouteImport.update({
+    id: '/partner-apply',
+    path: '/partner-apply',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -135,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
   '/bike-training': typeof BikeTrainingRoute
   '/book': typeof BookRoute
   '/car-training': typeof CarTrainingRoute
@@ -142,8 +173,11 @@ export interface FileRoutesByFullPath {
   '/courses': typeof CoursesRoute
   '/faq': typeof FaqRoute
   '/instructors': typeof InstructorsRoute
+  '/partner': typeof PartnerRoute
+  '/partner-terms': typeof PartnerTermsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/partner-apply': typeof AuthenticatedPartnerApplyRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
@@ -156,6 +190,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRoute
   '/bike-training': typeof BikeTrainingRoute
   '/book': typeof BookRoute
   '/car-training': typeof CarTrainingRoute
@@ -163,8 +198,11 @@ export interface FileRoutesByTo {
   '/courses': typeof CoursesRoute
   '/faq': typeof FaqRoute
   '/instructors': typeof InstructorsRoute
+  '/partner': typeof PartnerRoute
+  '/partner-terms': typeof PartnerTermsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/partner-apply': typeof AuthenticatedPartnerApplyRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
@@ -177,8 +215,10 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/auth': typeof AuthRoute
   '/bike-training': typeof BikeTrainingRoute
   '/book': typeof BookRoute
   '/car-training': typeof CarTrainingRoute
@@ -186,8 +226,11 @@ export interface FileRoutesById {
   '/courses': typeof CoursesRoute
   '/faq': typeof FaqRoute
   '/instructors': typeof InstructorsRoute
+  '/partner': typeof PartnerRoute
+  '/partner-terms': typeof PartnerTermsRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
+  '/_authenticated/partner-apply': typeof AuthenticatedPartnerApplyRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
@@ -203,6 +246,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin'
+    | '/auth'
     | '/bike-training'
     | '/book'
     | '/car-training'
@@ -210,8 +254,11 @@ export interface FileRouteTypes {
     | '/courses'
     | '/faq'
     | '/instructors'
+    | '/partner'
+    | '/partner-terms'
     | '/safety-rules'
     | '/testimonials'
+    | '/partner-apply'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
@@ -224,6 +271,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/auth'
     | '/bike-training'
     | '/book'
     | '/car-training'
@@ -231,8 +279,11 @@ export interface FileRouteTypes {
     | '/courses'
     | '/faq'
     | '/instructors'
+    | '/partner'
+    | '/partner-terms'
     | '/safety-rules'
     | '/testimonials'
+    | '/partner-apply'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
@@ -244,8 +295,10 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
     | '/admin'
+    | '/auth'
     | '/bike-training'
     | '/book'
     | '/car-training'
@@ -253,8 +306,11 @@ export interface FileRouteTypes {
     | '/courses'
     | '/faq'
     | '/instructors'
+    | '/partner'
+    | '/partner-terms'
     | '/safety-rules'
     | '/testimonials'
+    | '/_authenticated/partner-apply'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
@@ -267,8 +323,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AuthRoute: typeof AuthRoute
   BikeTrainingRoute: typeof BikeTrainingRoute
   BookRoute: typeof BookRoute
   CarTrainingRoute: typeof CarTrainingRoute
@@ -276,6 +334,8 @@ export interface RootRouteChildren {
   CoursesRoute: typeof CoursesRoute
   FaqRoute: typeof FaqRoute
   InstructorsRoute: typeof InstructorsRoute
+  PartnerRoute: typeof PartnerRoute
+  PartnerTermsRoute: typeof PartnerTermsRoute
   SafetyRulesRoute: typeof SafetyRulesRoute
   TestimonialsRoute: typeof TestimonialsRoute
 }
@@ -287,6 +347,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -301,6 +368,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bike-training': {
@@ -352,6 +426,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstructorsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/partner': {
+      id: '/partner'
+      path: '/partner'
+      fullPath: '/partner'
+      preLoaderRoute: typeof PartnerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partner-terms': {
+      id: '/partner-terms'
+      path: '/partner-terms'
+      fullPath: '/partner-terms'
+      preLoaderRoute: typeof PartnerTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/safety-rules': {
       id: '/safety-rules'
       path: '/safety-rules'
@@ -365,6 +453,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/testimonials'
       preLoaderRoute: typeof TestimonialsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/partner-apply': {
+      id: '/_authenticated/partner-apply'
+      path: '/partner-apply'
+      fullPath: '/partner-apply'
+      preLoaderRoute: typeof AuthenticatedPartnerApplyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/admin/': {
       id: '/admin/'
@@ -425,6 +520,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedPartnerApplyRoute: typeof AuthenticatedPartnerApplyRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedPartnerApplyRoute: AuthenticatedPartnerApplyRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 interface AdminRouteChildren {
   AdminAllocationRoute: typeof AdminAllocationRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
@@ -451,8 +557,10 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
+  AuthRoute: AuthRoute,
   BikeTrainingRoute: BikeTrainingRoute,
   BookRoute: BookRoute,
   CarTrainingRoute: CarTrainingRoute,
@@ -460,6 +568,8 @@ const rootRouteChildren: RootRouteChildren = {
   CoursesRoute: CoursesRoute,
   FaqRoute: FaqRoute,
   InstructorsRoute: InstructorsRoute,
+  PartnerRoute: PartnerRoute,
+  PartnerTermsRoute: PartnerTermsRoute,
   SafetyRulesRoute: SafetyRulesRoute,
   TestimonialsRoute: TestimonialsRoute,
 }
