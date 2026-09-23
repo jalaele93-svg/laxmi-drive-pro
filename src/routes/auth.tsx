@@ -10,9 +10,8 @@ import { lovable } from "@/integrations/lovable/index";
 type Search = { redirect?: string };
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>): Search => ({
-    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): Search =>
+    typeof search["redirect"] === "string" ? { redirect: search["redirect"] } : {},
   head: () => ({
     meta: [
       { title: "Partner Login & Registration | Laxmi Driving Training" },
