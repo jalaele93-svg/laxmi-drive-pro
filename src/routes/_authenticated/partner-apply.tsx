@@ -80,7 +80,7 @@ type Form = Record<FormKey, string>;
 const mobileRe = /^[6-9]\d{9}$/;
 
 function validate(step: number, f: Form, files: Record<string, File>): string | null {
-  const need = (keys: string[]) => keys.find((k) => !f[k]?.trim());
+  const need = (keys: FormKey[]) => keys.find((k) => !f[k].trim());
   if (step === 0) {
     if (need(["full_name", "mobile", "email", "address", "city", "district", "state", "pincode"]))
       return "Please fill all required fields.";
@@ -163,8 +163,14 @@ function PartnerApply() {
 
   const onFile = (id: string, file?: File) => {
     if (!file) return;
-    if (file.size > MAX_FILE_MB * 1024 * 1024) return toast.error(`File must be under ${MAX_FILE_MB} MB`);
-    if (!ACCEPTED_FILE_TYPES.split(",").includes(file.type)) return toast.error("Only JPG, PNG or PDF allowed");
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      toast.error(`File must be under ${MAX_FILE_MB} MB`);
+      return;
+    }
+    if (!ACCEPTED_FILE_TYPES.split(",").includes(file.type)) {
+      toast.error("Only JPG, PNG or PDF allowed");
+      return;
+    }
     setFiles((p) => ({ ...p, [id]: file }));
   };
 
@@ -321,7 +327,7 @@ function PartnerApply() {
               <label key={d.id} className="flex flex-col gap-2 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm font-medium">{d.label}{d.required ? " *" : ""}</span>
                 <span className="flex items-center gap-2 text-xs">
-                  {files[d.id] && <span className="max-w-[160px] truncate text-primary">✓ {files[d.id].name}</span>}
+                  {files[d.id] && <span className="max-w-[160px] truncate text-primary">✓ {files[d.id]?.name}</span>}
                   <input type="file" accept={ACCEPTED_FILE_TYPES} onChange={(e) => onFile(d.id, e.target.files?.[0])} className="text-xs" />
                 </span>
               </label>
