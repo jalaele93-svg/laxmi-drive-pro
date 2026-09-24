@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Check, Car, Bike, Clock } from "lucide-react";
+import { Check, Car, CarTaxiFront, Bike, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/lib/site";
 
 export function CourseCard({ course }: { course: Course }) {
-  const Icon = course.vehicle === "Car" ? Car : Bike;
+  const Icon = course.vehicle === "Car" ? Car : course.vehicle === "Auto" ? CarTaxiFront : Bike;
 
   return (
     <article className="card-surface animate-fade-up relative flex h-full flex-col gap-5 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]">

@@ -29,6 +29,7 @@ export const Route = createFileRoute("/courses")({
 function Courses() {
   const groups = [
     { key: "Car", title: "Car Driving Courses" },
+    { key: "Auto", title: "Auto-Rickshaw Courses" },
     { key: "Motorcycle", title: "Motorcycle Courses" },
     { key: "Scooter", title: "Scooter Courses" },
   ] as const;

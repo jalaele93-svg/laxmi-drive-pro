@@ -10,8 +10,8 @@ type VehicleSearch = { vehicle?: BookingValues["vehicleType"] };
 export const Route = createFileRoute("/book")({
   validateSearch: (search: Record<string, unknown>): VehicleSearch => {
     const v = search["vehicle"];
-    return v === "Car" || v === "Bike" || v === "Scooter" || v === "Motorcycle"
-      ? { vehicle: v === "Motorcycle" ? "Bike" : v }
+    return v === "Car" || v === "Bike" || v === "Scooter" || v === "Motorcycle" || v === "Auto"
+      ? { vehicle: v === "Motorcycle" ? "Bike" : (v as BookingValues["vehicleType"]) }
       : {};
   },
   head: () => ({

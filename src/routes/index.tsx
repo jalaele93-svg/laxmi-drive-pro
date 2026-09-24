@@ -59,7 +59,7 @@ function Home() {
           <div className="animate-fade-up space-y-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-4 py-1.5 text-xs font-semibold">
               <BadgeCheck className="size-4 text-accent" aria-hidden="true" />
-              Car • Motorcycle • Scooter Training
+              Car • Auto • Motorcycle • Scooter Training
             </span>
             <h1 className="font-display text-4xl leading-[1.05] font-extrabold text-balance sm:text-5xl lg:text-[3.6rem]">
               Learn Driving the <span className="text-gradient-brand">Safe & Simple</span> Way

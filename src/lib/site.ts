@@ -11,7 +11,7 @@ export const site = {
   name: "Laxmi Driving Training",
   wordmark: "LAXMI DRIVING TRAINING",
   domain: "LAXMIDRIVING.COM",
-  tagline: "Learn Car, Bike & Scooter Driving the Safe Way",
+  tagline: "Learn Car, Bike, Scooter & Auto Driving the Safe Way",
 
   /** Phone number for click-to-call links */
   phoneDisplay: "+91 70088 91923", // shown on the website
@@ -97,7 +97,7 @@ export const navLinks = [
  */
 export type Course = {
   id: string;
-  vehicle: "Car" | "Motorcycle" | "Scooter";
+  vehicle: "Car" | "Motorcycle" | "Scooter" | "Auto";
   level: "Beginner" | "Advanced";
   title: string;
   price: string;
@@ -207,6 +207,40 @@ export const courses: Course[] = [
       "Riding with a pillion",
       "Monsoon riding care",
       "Basic scooter maintenance",
+    ],
+  },
+  {
+    id: "auto-beginner",
+    vehicle: "Auto",
+    level: "Beginner",
+    title: "Auto Training — Beginner",
+    price: "₹4,000 – ₹6,000",
+    duration: "21 days • 21 classes",
+    summary:
+      "Learn to drive an auto-rickshaw safely from day one — steering, balance and full road confidence.",
+    features: [
+      "Start, ride and stop practice",
+      "Handlebar steering control",
+      "Slow-speed balance and turning",
+      "U-turns and narrow-lane practice",
+      "Traffic signs and road rules class",
+    ],
+  },
+  {
+    id: "auto-advanced",
+    vehicle: "Auto",
+    level: "Advanced",
+    title: "Auto Training — Advanced",
+    price: "₹3,000 – ₹4,500",
+    duration: "12 days • 12 classes",
+    summary:
+      "Sharpen your auto-rickshaw driving for busy roads, passenger safety and daily commercial use.",
+    features: [
+      "Busy city traffic practice",
+      "Passenger safety and pick-up care",
+      "Safe braking in traffic",
+      "Hill and rough-road handling",
+      "Defensive driving habits",
     ],
   },
 ];

@@ -7,7 +7,7 @@ export type BookingValues = {
   fullName: string;
   mobile: string;
   email: string;
-  vehicleType: "" | "Car" | "Bike" | "Scooter";
+  vehicleType: "" | "Car" | "Bike" | "Scooter" | "Auto";
   experience: "" | "Beginner" | "Intermediate" | "Advanced";
   date: string;
   time: string;
@@ -34,7 +34,7 @@ function validate(v: BookingValues): Errors {
     e.mobile = "Enter a valid 10-digit Indian mobile number.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.email.trim()))
     e.email = "Enter a valid e-mail ID, for example name@gmail.com.";
-  if (!v.vehicleType) e.vehicleType = "Please choose Car, Bike or Scooter.";
+  if (!v.vehicleType) e.vehicleType = "Please choose Car, Auto, Bike or Scooter.";
   if (!v.experience) e.experience = "Please choose your experience level.";
   if (!v.date) e.date = "Please choose a preferred date.";
   else if (new Date(v.date + "T23:59:59") < new Date(new Date().toDateString()))
@@ -180,6 +180,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
           >
             <option value="">Select vehicle</option>
             <option value="Car">Car</option>
+            <option value="Auto">Auto</option>
             <option value="Bike">Bike</option>
             <option value="Scooter">Scooter</option>
           </select>

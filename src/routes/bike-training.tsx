@@ -30,7 +30,7 @@ export const Route = createFileRoute("/bike-training")({
 });
 
 function BikeTraining() {
-  const twoWheeler = courses.filter((c) => c.vehicle !== "Car");
+  const twoWheeler = courses.filter((c) => c.vehicle === "Motorcycle" || c.vehicle === "Scooter");
 
   return (
     <>
