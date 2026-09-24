@@ -44,7 +44,38 @@ export const Route = createFileRoute("/_authenticated/partner-apply")({
 
 const steps = ["Your Details", "Vehicle", "Documents", "Preferences", "Bank & Payment"];
 
-type Form = Record<string, string>;
+type FormKey =
+  | "full_name"
+  | "mobile"
+  | "email"
+  | "alternate_mobile"
+  | "address"
+  | "city"
+  | "district"
+  | "state"
+  | "pincode"
+  | "vehicle_type"
+  | "registration_number"
+  | "vehicle_make"
+  | "vehicle_model"
+  | "manufacturing_year"
+  | "fuel_type"
+  | "transmission"
+  | "vehicle_color"
+  | "odometer_km"
+  | "ownership_status"
+  | "preferred_location"
+  | "preferred_use"
+  | "preferred_availability"
+  | "bank_account_name"
+  | "bank_name"
+  | "bank_account_number"
+  | "bank_ifsc"
+  | "upi_id"
+  | "payment_reference"
+  | "terms";
+
+type Form = Record<FormKey, string>;
 
 const mobileRe = /^[6-9]\d{9}$/;
 
@@ -83,13 +114,43 @@ function PartnerApply() {
   const { vehicle } = Route.useSearch();
   const { user } = useAuth();
   const [step, setStep] = useState(0);
-  const [f, setF] = useState<Form>({ state: "Odisha", vehicle_type: vehicle ?? "", ownership_status: ownershipOptions[0] });
+  const [f, setF] = useState<Form>({
+    full_name: "",
+    mobile: "",
+    email: "",
+    alternate_mobile: "",
+    address: "",
+    city: "",
+    district: "",
+    state: "Odisha",
+    pincode: "",
+    vehicle_type: vehicle ?? "",
+    registration_number: "",
+    vehicle_make: "",
+    vehicle_model: "",
+    manufacturing_year: "",
+    fuel_type: "",
+    transmission: "",
+    vehicle_color: "",
+    odometer_km: "",
+    ownership_status: ownershipOptions[0],
+    preferred_location: "",
+    preferred_use: "",
+    preferred_availability: "",
+    bank_account_name: "",
+    bank_name: "",
+    bank_account_number: "",
+    bank_ifsc: "",
+    upi_id: "",
+    payment_reference: "",
+    terms: "",
+  });
   const [files, setFiles] = useState<Record<string, File>>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<{ no: string; ref: boolean } | null>(null);
 
-  const set = (k: string, v: string) => setF((p) => ({ ...p, [k]: v }));
+  const set = (k: FormKey, v: string) => setF((p) => ({ ...p, [k]: v }));
 
   const next = () => {
     const e = validate(step, f, files);
@@ -341,20 +402,20 @@ function Grid({ children }: { children: React.ReactNode }) {
 
 const inputCls = "mt-1 w-full rounded-lg border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary";
 
-function In({ label, k, f, set, type = "text", wide }: { label: string; k: string; f: Form; set: (k: string, v: string) => void; type?: string; wide?: boolean }) {
+function In({ label, k, f, set, type = "text", wide }: { label: string; k: FormKey; f: Form; set: (k: FormKey, v: string) => void; type?: string; wide?: boolean }) {
   return (
     <label className={`block text-sm font-medium ${wide ? "sm:col-span-2" : ""}`}>
       {label}
-      <input type={type} value={f[k] ?? ""} onChange={(e) => set(k, e.target.value)} className={inputCls} />
+      <input type={type} value={f[k]} onChange={(e) => set(k, e.target.value)} className={inputCls} />
     </label>
   );
 }
 
-function Sel({ label, k, f, set, opts }: { label: string; k: string; f: Form; set: (k: string, v: string) => void; opts: string[] }) {
+function Sel({ label, k, f, set, opts }: { label: string; k: FormKey; f: Form; set: (k: FormKey, v: string) => void; opts: string[] }) {
   return (
     <label className="block text-sm font-medium">
       {label}
-      <select value={f[k] ?? ""} onChange={(e) => set(k, e.target.value)} className={inputCls}>
+      <select value={f[k]} onChange={(e) => set(k, e.target.value)} className={inputCls}>
         <option value="">Select…</option>
         {opts.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
