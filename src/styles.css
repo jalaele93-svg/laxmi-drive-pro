@@ -162,6 +162,31 @@
   }
 }
 
+@keyframes vehicle-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.vehicle-slider-progress {
+  animation: vehicle-progress 3s linear forwards;
+  transform-origin: left;
+}
+
+.vehicle-slider-paused .vehicle-slider-progress {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vehicle-slider-progress {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
 @utility bg-hero-gradient {
   background-image: var(--gradient-hero);
 }
