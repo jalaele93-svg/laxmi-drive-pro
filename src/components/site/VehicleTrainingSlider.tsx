@@ -153,7 +153,7 @@ export function VehicleTrainingSlider() {
               alt={slide.alt}
               loading="lazy"
               width={1600}
-              height={900}
+              height={912}
               className="size-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-primary-dark/35 to-transparent" />
@@ -181,17 +181,14 @@ export function VehicleTrainingSlider() {
           </article>
         ))}
 
-        <div className="absolute inset-x-6 top-5 z-20 flex gap-2 sm:inset-x-auto sm:right-6 sm:left-1/2">
+        <div className="pointer-events-none absolute inset-x-6 top-5 z-20 flex gap-2 sm:inset-x-auto sm:right-6 sm:left-1/2" aria-hidden="true">
           {slides.map((slide, index) => (
-            <button
+            <span
               key={slide.label}
-              type="button"
-              aria-label={`Show ${slide.label} training`}
-              onClick={() => setActive(index)}
-              className="h-1 flex-1 cursor-pointer overflow-hidden rounded-full bg-primary-foreground/30 sm:w-12"
+              className="h-1 flex-1 overflow-hidden rounded-full bg-primary-foreground/30 sm:w-12"
             >
               {active === index && <span key={active} className="vehicle-slider-progress block h-full bg-accent" />}
-            </button>
+            </span>
           ))}
         </div>
 

@@ -16,7 +16,6 @@ import { CourseCard } from "@/components/site/CourseCard";
 import { CtaBand } from "@/components/site/CtaBand";
 import { VehicleTrainingSlider } from "@/components/site/VehicleTrainingSlider";
 import heroCar from "@/assets/hero-car.jpg";
-import heroBike from "@/assets/hero-bike.jpg";
 import scooterImg from "@/assets/scooter-training.jpg";
 import { courses, safetyRules, site, telHref, testimonials, trustStats, whatsappHref } from "@/lib/site";
 
