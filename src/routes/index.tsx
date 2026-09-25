@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  Bike,
   CalendarCheck,
-  Car,
   MessageCircle,
   Phone,
   ShieldCheck,
@@ -16,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/site/Section";
 import { CourseCard } from "@/components/site/CourseCard";
 import { CtaBand } from "@/components/site/CtaBand";
+import { VehicleTrainingSlider } from "@/components/site/VehicleTrainingSlider";
 import heroCar from "@/assets/hero-car.jpg";
 import heroBike from "@/assets/hero-bike.jpg";
 import scooterImg from "@/assets/scooter-training.jpg";
@@ -38,6 +37,7 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:url", content: "/" },
       { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: "/" }],
   }),
@@ -128,24 +128,7 @@ function Home() {
             title="What would you like to learn?"
             description="Pick your vehicle and we will match you with the right instructor and batch timing."
           />
-          <div className="grid gap-6 md:grid-cols-2">
-            <ChoiceCard
-              to="/car-training"
-              image={heroCar}
-              alt="Learner driving a white training car with an instructor on a practice ground"
-              Icon={Car}
-              title="Car Driving Training"
-              points={["Beginner to advanced", "Dual-control car", "Parking & traffic practice"]}
-            />
-            <ChoiceCard
-              to="/bike-training"
-              image={heroBike}
-              alt="Rider in full safety gear practising slow-speed control between orange cones"
-              Icon={Bike}
-              title="Bike & Scooter Training"
-              points={["Geared bike & scooter", "Balance and braking", "Ladies batches available"]}
-            />
-          </div>
+          <VehicleTrainingSlider />
         </div>
       </section>
 
@@ -310,51 +293,5 @@ function Home() {
 
       <CtaBand />
     </>
-  );
-}
-
-function ChoiceCard({
-  to,
-  image,
-  alt,
-  Icon,
-  title,
-  points,
-}: {
-  to: "/car-training" | "/bike-training";
-  image: string;
-  alt: string;
-  Icon: typeof Car;
-  title: string;
-  points: string[];
-}) {
-  return (
-    <Link
-      to={to}
-      className="card-surface animate-fade-up group block overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)]"
-    >
-      <img
-        src={image}
-        alt={alt}
-        loading="lazy"
-        width={1200}
-        height={800}
-        className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-      />
-      <div className="space-y-3 p-6">
-        <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
-          <Icon className="size-5" aria-hidden="true" />
-        </span>
-        <h3 className="font-display text-xl font-bold">{title}</h3>
-        <ul className="grid gap-1.5 text-sm text-muted-foreground">
-          {points.map((p) => (
-            <li key={p}>• {p}</li>
-          ))}
-        </ul>
-        <span className="inline-flex items-center gap-2 pt-1 text-sm font-semibold text-primary">
-          View details <ArrowRight className="size-4" aria-hidden="true" />
-        </span>
-      </div>
-    </Link>
   );
 }
