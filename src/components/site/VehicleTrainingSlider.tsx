@@ -191,15 +191,6 @@ export function VehicleTrainingSlider() {
             </span>
           ))}
         </div>
-
-        <div className="absolute right-4 bottom-4 z-20 flex gap-2 sm:hidden">
-          <Button type="button" size="icon" variant="onDark" onClick={() => move(-1)} aria-label="Previous vehicle">
-            <ChevronLeft aria-hidden="true" />
-          </Button>
-          <Button type="button" size="icon" variant="onDark" onClick={() => move(1)} aria-label="Next vehicle">
-            <ChevronRight aria-hidden="true" />
-          </Button>
-        </div>
       </div>
     </div>
   );
