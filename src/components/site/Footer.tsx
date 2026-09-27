@@ -20,12 +20,12 @@ export function Footer() {
             confidence — one class at a time.
           </p>
           <div className="flex gap-2">
-            {socials.map(({ key, href, Icon, label }) => (
+            {socials.filter(({ href }) => Boolean(href)).map(({ key, href, Icon, label }) => (
               <a
                 key={key}
-                href={href || "#"}
-                aria-label={`${label} (link placeholder — add your page URL)`}
-                target={href ? "_blank" : undefined}
+                href={href}
+                aria-label={label}
+                target="_blank"
                 rel="noreferrer"
                 className="grid size-10 place-items-center rounded-xl border border-primary-foreground/25 transition-colors hover:bg-primary-foreground/10"
               >

@@ -8,6 +8,7 @@ import {
   Users,
   BarChart3,
   Settings,
+  CarFront,
   ArrowLeft,
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ import {
 const items = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
   { title: "Orders", url: "/admin/orders", icon: ClipboardList },
+  { title: "Partners", url: "/admin/partners", icon: CarFront },
   { title: "Payments", url: "/admin/payments", icon: CreditCard },
   { title: "Drivers", url: "/admin/drivers", icon: IdCard },
   { title: "Allocation", url: "/admin/allocation", icon: CalendarClock },
@@ -47,7 +49,7 @@ export function AdminSidebar() {
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
             <p className="truncate text-sm font-bold leading-tight">Laxmi Admin</p>
-            <p className="truncate text-xs text-muted-foreground">Demo workspace</p>
+            <p className="truncate text-xs text-muted-foreground">Staff workspace</p>
           </div>
         </div>
       </SidebarHeader>

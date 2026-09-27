@@ -128,14 +128,6 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
           </Button>
         </div>
 
-        <Field label="Payment preference" htmlFor="paymentChoice">
-          <select id="paymentChoice" name="paymentChoice" className={fieldClass} value={values.paymentChoice} onChange={(e) => set("paymentChoice", e.target.value as BookingValues["paymentChoice"])}>
-            <option value="Pay after confirmation">Decide after confirmation</option>
-            <option value="UPI">UPI (GPay, PhonePe, Paytm)</option>
-            <option value="Card">Card</option>
-            <option value="Cash">Cash at office</option>
-          </select>
-        </Field>
       </div>
     );
   }
@@ -253,6 +245,15 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
           value={values.message}
           onChange={(e) => set("message", e.target.value)}
         />
+      </Field>
+
+      <Field label="Payment preference" htmlFor="paymentChoice">
+        <select id="paymentChoice" name="paymentChoice" className={fieldClass} value={values.paymentChoice} onChange={(e) => set("paymentChoice", e.target.value as BookingValues["paymentChoice"])}>
+          <option value="Pay after confirmation">Decide after confirmation</option>
+          <option value="UPI">UPI (GPay, PhonePe, Paytm)</option>
+          <option value="Card">Card</option>
+          <option value="Cash">Cash at office</option>
+        </select>
       </Field>
 
       {submitError && <p role="alert" className="text-sm text-destructive">{submitError}</p>}
