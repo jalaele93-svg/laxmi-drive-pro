@@ -11,7 +11,7 @@ export const Route = createFileRoute("/admin")({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw redirect({ to: "/auth", search: { redirect: location.href } });
     const { data: allowed, error } = await supabase.rpc("is_staff", { _user_id: user.id });
-    if (error || !allowed) throw redirect({ to: "/partner-dashboard" });
+    if (error || !allowed) throw redirect({ to: "/" });
   },
   head: () => ({
     meta: [

@@ -25,7 +25,7 @@ function useSave() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: async ({ table, id, changes }: { table: "lesson_bookings" | "instructor_roster" | "partner_applications" | "partner_documents"; id: string; changes: Record<string, unknown> }) => {
     // Each table is staff-only under database access policies; the type-specific payload is checked by the database.
-    const { error } = await supabase.from(table).update(changes).eq("id", id);
+    const { error } = await supabase.from(table).update(changes as never).eq("id", id);
     if (error) throw error;
   }, onSuccess: () => { qc.invalidateQueries(); toast.success("Saved"); }, onError: (error) => toast.error(friendlyError(error)) });
 }

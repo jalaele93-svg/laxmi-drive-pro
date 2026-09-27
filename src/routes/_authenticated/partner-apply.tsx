@@ -217,7 +217,7 @@ function PartnerApply() {
           payment_status: hasRef ? "Under Verification" : "Pending",
           payment_method: hasRef ? "UPI / Bank Transfer" : null,
           payment_reference: hasRef ? f.payment_reference.trim() : null,
-          payment_paid_at: hasRef ? new Date().toISOString() : null,
+          payment_paid_at: null,
           submitted_at: new Date().toISOString(),
         })
         .select("id, application_no")
