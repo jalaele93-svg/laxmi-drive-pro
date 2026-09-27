@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      lesson_bookings: {
+        Row: {
+          amount: number | null
+          created_at: string
+          email: string
+          experience: string
+          full_name: string
+          id: string
+          instructor: string | null
+          message: string | null
+          mobile: string
+          payment_choice: string
+          payment_status: string
+          preferred_date: string
+          preferred_time: string
+          staff_notes: string | null
+          status: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          email: string
+          experience: string
+          full_name: string
+          id?: string
+          instructor?: string | null
+          message?: string | null
+          mobile: string
+          payment_choice?: string
+          payment_status?: string
+          preferred_date: string
+          preferred_time: string
+          staff_notes?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          email?: string
+          experience?: string
+          full_name?: string
+          id?: string
+          instructor?: string | null
+          message?: string | null
+          mobile?: string
+          payment_choice?: string
+          payment_status?: string
+          preferred_date?: string
+          preferred_time?: string
+          staff_notes?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
       partner_applications: {
         Row: {
           address: string
