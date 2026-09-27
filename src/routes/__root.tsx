@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -150,20 +150,23 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [hydrated, setHydrated] = useState(false);
   const isAdmin = useRouterState({
     select: (r) => r.location.pathname.startsWith("/admin"),
   });
+  useEffect(() => setHydrated(true), []);
+  const showPublicChrome = !(hydrated && isAdmin);
 
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
-        {isAdmin ? null : <Header />}
+        {showPublicChrome ? <Header /> : null}
         <main className="flex-1">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </main>
-        {isAdmin ? null : <Footer />}
-        {isAdmin ? null : <FloatingActions />}
+        {showPublicChrome ? <Footer /> : null}
+        {showPublicChrome ? <FloatingActions /> : null}
         <Toaster position="top-right" richColors />
       </div>
     </QueryClientProvider>

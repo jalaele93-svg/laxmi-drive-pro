@@ -12,3 +12,5 @@
 - Public lesson enquiries are saved in `lesson_bookings` with write-only anonymous access and staff-only reads; this keeps learner contact details private.
 - Staff pages use verified `user_roles` via the managed auth gate and database policies, never browser-stored roles; this prevents a visitor from seeing operational data.
 - Payment status is recorded separately from payment preference; a selected UPI/card method never proves money was received.
+- Partner approval is enforced in the database and requires verified payment, required documents, and a staff-recorded vehicle inspection.
+- Operational admin pages read live staff-only records; public marketing content remains file-managed until a content editor is requested.
