@@ -26,11 +26,13 @@ import { Route as PartnerTermsRouteImport } from './routes/partner-terms'
 import { Route as SafetyRulesRouteImport } from './routes/safety-rules'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as AuthenticatedPartnerApplyRouteImport } from './routes/_authenticated/partner-apply'
+import { Route as AuthenticatedPartnerDashboardRouteImport } from './routes/_authenticated/partner-dashboard'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAllocationRouteImport } from './routes/admin.allocation'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminDriversRouteImport } from './routes/admin.drivers'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminPartnersRouteImport } from './routes/admin.partners'
 import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -120,6 +122,12 @@ const AuthenticatedPartnerApplyRoute =
     path: '/partner-apply',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPartnerDashboardRoute =
+  AuthenticatedPartnerDashboardRouteImport.update({
+    id: '/partner-dashboard',
+    path: '/partner-dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -143,6 +151,11 @@ const AdminDriversRoute = AdminDriversRouteImport.update({
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPartnersRoute = AdminPartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
@@ -178,10 +191,12 @@ export interface FileRoutesByFullPath {
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/partner-apply': typeof AuthenticatedPartnerApplyRoute
+  '/partner-dashboard': typeof AuthenticatedPartnerDashboardRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/partners': typeof AdminPartnersRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -203,10 +218,12 @@ export interface FileRoutesByTo {
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/partner-apply': typeof AuthenticatedPartnerApplyRoute
+  '/partner-dashboard': typeof AuthenticatedPartnerDashboardRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/partners': typeof AdminPartnersRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -231,10 +248,12 @@ export interface FileRoutesById {
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/_authenticated/partner-apply': typeof AuthenticatedPartnerApplyRoute
+  '/_authenticated/partner-dashboard': typeof AuthenticatedPartnerDashboardRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/partners': typeof AdminPartnersRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -259,10 +278,12 @@ export interface FileRouteTypes {
     | '/safety-rules'
     | '/testimonials'
     | '/partner-apply'
+    | '/partner-dashboard'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
     | '/admin/orders'
+    | '/admin/partners'
     | '/admin/payments'
     | '/admin/reports'
     | '/admin/settings'
@@ -284,10 +305,12 @@ export interface FileRouteTypes {
     | '/safety-rules'
     | '/testimonials'
     | '/partner-apply'
+    | '/partner-dashboard'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
     | '/admin/orders'
+    | '/admin/partners'
     | '/admin/payments'
     | '/admin/reports'
     | '/admin/settings'
@@ -311,10 +334,12 @@ export interface FileRouteTypes {
     | '/safety-rules'
     | '/testimonials'
     | '/_authenticated/partner-apply'
+    | '/_authenticated/partner-dashboard'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
     | '/admin/orders'
+    | '/admin/partners'
     | '/admin/payments'
     | '/admin/reports'
     | '/admin/settings'
@@ -461,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPartnerApplyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/partner-dashboard': {
+      id: '/_authenticated/partner-dashboard'
+      path: '/partner-dashboard'
+      fullPath: '/partner-dashboard'
+      preLoaderRoute: typeof AuthenticatedPartnerDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -496,6 +528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminOrdersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/partners': {
+      id: '/admin/partners'
+      path: '/partners'
+      fullPath: '/admin/partners'
+      preLoaderRoute: typeof AdminPartnersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/payments': {
       id: '/admin/payments'
       path: '/payments'
@@ -522,10 +561,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedPartnerApplyRoute: typeof AuthenticatedPartnerApplyRoute
+  AuthenticatedPartnerDashboardRoute: typeof AuthenticatedPartnerDashboardRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPartnerApplyRoute: AuthenticatedPartnerApplyRoute,
+  AuthenticatedPartnerDashboardRoute: AuthenticatedPartnerDashboardRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -536,6 +577,7 @@ interface AdminRouteChildren {
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminDriversRoute: typeof AdminDriversRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminPartnersRoute: typeof AdminPartnersRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminReportsRoute: typeof AdminReportsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -547,6 +589,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCustomersRoute: AdminCustomersRoute,
   AdminDriversRoute: AdminDriversRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminPartnersRoute: AdminPartnersRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminReportsRoute: AdminReportsRoute,
   AdminSettingsRoute: AdminSettingsRoute,

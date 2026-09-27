@@ -217,7 +217,7 @@ function PartnerApply() {
           payment_status: hasRef ? "Under Verification" : "Pending",
           payment_method: hasRef ? "UPI / Bank Transfer" : null,
           payment_reference: hasRef ? f.payment_reference.trim() : null,
-          payment_paid_at: hasRef ? new Date().toISOString() : null,
+          payment_paid_at: null,
           submitted_at: new Date().toISOString(),
         })
         .select("id, application_no")
@@ -258,6 +258,7 @@ function PartnerApply() {
           <h1 className="font-display mt-4 text-3xl font-extrabold">Application Submitted</h1>
           <p className="mt-2 text-muted-foreground">Your Partner Application ID</p>
           <p className="font-display mt-1 text-2xl font-bold text-accent">{done.no}</p>
+          <Button asChild className="mt-4" variant="outline"><Link to="/partner-dashboard">Track your application</Link></Button>
           <ul className="mx-auto mt-6 max-w-sm space-y-2 text-left text-sm">
             <li>✅ Application Submitted</li>
             <li>{done.ref ? "🕑 Payment reference received — under verification" : "⏳ Payment pending"}</li>
@@ -392,11 +393,10 @@ function PartnerApply() {
 function PaymentBox() {
   return (
     <div className="mt-6 rounded-xl border-2 border-dashed border-accent/60 p-4 text-left text-sm">
-      <p className="font-semibold">Pay ₹{DEPOSIT_AMOUNT.toLocaleString("en-IN")} Partner Enrollment Advance Deposit</p>
-      <p className="mt-2">UPI: <b>{partnerPayment.upiId}</b> ({partnerPayment.upiName})</p>
-      <p>Bank: {partnerPayment.bankName} · A/c {partnerPayment.accountNumber} · IFSC {partnerPayment.ifsc}</p>
+      <p className="font-semibold">₹{DEPOSIT_AMOUNT.toLocaleString("en-IN")} Partner Enrollment Advance Deposit</p>
+      {partnerPayment.upiId.startsWith("[EDIT") ? <p className="mt-2">Please contact us for verified UPI or bank payment instructions. Do not send money to an unverified account.</p> : <><p className="mt-2">UPI: <b>{partnerPayment.upiId}</b> ({partnerPayment.upiName})</p><p>Bank: {partnerPayment.bankName} · A/c {partnerPayment.accountNumber} · IFSC {partnerPayment.ifsc}</p></>}
       <p className="mt-2 text-xs text-muted-foreground">
-        After paying, share the transaction ID on WhatsApp {site.phoneDisplay}. Refunds follow the Partner Terms.
+        After paying, share the transaction ID on WhatsApp {site.phoneDisplay}. A transaction reference is not proof of receipt. Refunds follow the Partner Terms.
       </p>
     </div>
   );

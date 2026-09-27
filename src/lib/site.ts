@@ -89,6 +89,7 @@ export const navLinks = [
   { to: "/testimonials", label: "Testimonials" },
   { to: "/faq", label: "FAQ" },
   { to: "/contact", label: "Contact Us" },
+  { to: "/partner", label: "Become a Partner" },
 ] as const;
 
 /**

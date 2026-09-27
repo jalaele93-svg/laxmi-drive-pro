@@ -1,0 +1,14 @@
+CREATE OR REPLACE FUNCTION public.protect_partner_application_fields() RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
+BEGIN
+ IF TG_OP = 'INSERT' AND NOT public.is_staff(auth.uid()) THEN
+  IF NEW.user_id IS DISTINCT FROM auth.uid() OR NEW.status NOT IN ('Draft','Submitted','Payment Pending') OR NEW.payment_status NOT IN ('Pending','Under Verification') OR NEW.payment_verified_at IS NOT NULL OR NEW.partner_id IS NOT NULL OR NEW.admin_notes IS NOT NULL OR NEW.rejection_reason IS NOT NULL OR NEW.deposit_amount <> 2000 OR NEW.payment_paid_at IS NOT NULL OR (NEW.payment_status = 'Under Verification' AND nullif(btrim(NEW.payment_reference), '') IS NULL) THEN
+   RAISE EXCEPTION 'Restricted partner application fields';
+  END IF;
+ END IF;
+ IF TG_OP = 'UPDATE' AND NOT public.is_staff(auth.uid()) THEN
+  IF NEW.user_id IS DISTINCT FROM OLD.user_id OR NEW.status IS DISTINCT FROM OLD.status OR NEW.deposit_amount IS DISTINCT FROM OLD.deposit_amount OR NEW.payment_verified_at IS DISTINCT FROM OLD.payment_verified_at OR NEW.payment_paid_at IS DISTINCT FROM OLD.payment_paid_at OR NEW.partner_id IS DISTINCT FROM OLD.partner_id OR NEW.admin_notes IS DISTINCT FROM OLD.admin_notes OR NEW.rejection_reason IS DISTINCT FROM OLD.rejection_reason OR NEW.terms_accepted IS DISTINCT FROM OLD.terms_accepted OR (NEW.payment_status IS DISTINCT FROM OLD.payment_status AND NOT (OLD.payment_status = 'Pending' AND NEW.payment_status = 'Under Verification' AND nullif(btrim(NEW.payment_reference), '') IS NOT NULL)) THEN
+   RAISE EXCEPTION 'Only staff can change verification or ownership';
+  END IF;
+ END IF;
+ RETURN NEW;
+END; $$;

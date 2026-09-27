@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CheckCircle2, Loader2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { site, telHref } from "@/lib/site";
+import { supabase } from "@/integrations/supabase/client";
 
 export type BookingValues = {
   fullName: string;
@@ -12,6 +13,7 @@ export type BookingValues = {
   date: string;
   time: string;
   message: string;
+  paymentChoice: "Pay after confirmation" | "UPI" | "Card" | "Cash";
 };
 
 type Errors = Partial<Record<keyof BookingValues, string>>;
@@ -25,6 +27,7 @@ const emptyValues: BookingValues = {
   date: "",
   time: "",
   message: "",
+  paymentChoice: "Pay after confirmation",
 };
 
 function validate(v: BookingValues): Errors {
@@ -43,17 +46,14 @@ function validate(v: BookingValues): Errors {
   return e;
 }
 
-/**
- * Sends the booking. Today it only simulates a request so the form works
- * without a backend. To connect e-mail or a database later, replace the body
- * of this function with a call to your server function / API — the form,
- * validation and success state stay exactly the same.
- */
 async function submitBooking(values: BookingValues): Promise<void> {
-  // TODO [EDIT]: replace with a real submit, e.g.
-  // await sendBookingRequest({ data: values })
-  console.info("Booking request", values);
-  await new Promise((r) => setTimeout(r, 700));
+  const { error } = await supabase.from("lesson_bookings").insert({
+    full_name: values.fullName.trim(), mobile: values.mobile.trim(), email: values.email.trim(),
+    vehicle_type: values.vehicleType, experience: values.experience,
+    preferred_date: values.date, preferred_time: values.time, message: values.message.trim() || null,
+    payment_choice: values.paymentChoice,
+  });
+  if (error) throw error;
 }
 
 const fieldClass =
@@ -66,6 +66,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
   });
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
+  const [submitError, setSubmitError] = useState("");
 
   const set = <K extends keyof BookingValues>(key: K, value: BookingValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -82,8 +83,14 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
       return;
     }
     setStatus("sending");
-    await submitBooking(values);
-    setStatus("done");
+    setSubmitError("");
+    try {
+      await submitBooking(values);
+      setStatus("done");
+    } catch {
+      setSubmitError("Your request could not be saved. Please try again or call us.");
+      setStatus("idle");
+    }
   }
 
   if (status === "done") {
@@ -120,6 +127,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
             Book another lesson
           </Button>
         </div>
+
       </div>
     );
   }
@@ -239,6 +247,16 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
         />
       </Field>
 
+      <Field label="Payment preference" htmlFor="paymentChoice">
+        <select id="paymentChoice" name="paymentChoice" className={fieldClass} value={values.paymentChoice} onChange={(e) => set("paymentChoice", e.target.value as BookingValues["paymentChoice"])}>
+          <option value="Pay after confirmation">Decide after confirmation</option>
+          <option value="UPI">UPI (GPay, PhonePe, Paytm)</option>
+          <option value="Card">Card</option>
+          <option value="Cash">Cash at office</option>
+        </select>
+      </Field>
+
+      {submitError && <p role="alert" className="text-sm text-destructive">{submitError}</p>}
       <Button type="submit" variant="cta" size="xl" disabled={status === "sending"}>
         {status === "sending" ? (
           <>
@@ -249,7 +267,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
         )}
       </Button>
       <p className="text-center text-xs text-muted-foreground">
-        We only use your details to contact you about your driving classes.
+        No payment is collected now. We use your details only to contact you about your classes.
       </p>
     </form>
   );

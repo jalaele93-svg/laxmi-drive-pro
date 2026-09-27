@@ -238,7 +238,7 @@ function Home() {
           <SectionHeading
             eyebrow="Student reviews"
             title="What our students say"
-            description="Reviews below are editable placeholders — add real feedback from your students."
+            description="Hear from learners who trained with us."
           />
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.slice(0, 3).map((t) => (

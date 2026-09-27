@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { FloatingActions } from "@/components/site/FloatingActions";
+import { Toaster } from "@/components/ui/sonner";
 import { site } from "@/lib/site";
 
 function NotFoundComponent() {
@@ -163,6 +164,7 @@ function RootComponent() {
         </main>
         {isAdmin ? null : <Footer />}
         {isAdmin ? null : <FloatingActions />}
+        <Toaster position="top-right" richColors />
       </div>
     </QueryClientProvider>
   );

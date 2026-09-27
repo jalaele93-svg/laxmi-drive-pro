@@ -193,8 +193,8 @@ function PartnerLanding() {
               approved. Final partner approval happens only after document and vehicle verification.
             </p>
             <p className="mt-3 text-sm text-muted-foreground">
-              Payment is made by UPI or bank transfer. After paying, enter your payment reference in
-              your partner dashboard so our team can verify it.
+              Contact our team for verified UPI or bank instructions before paying. After paying, enter
+              your reference in your partner dashboard for manual verification.
             </p>
             <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
               {["Pending", "Paid", "Under Verification", "Verified", "Refunded"].map((s) => (
