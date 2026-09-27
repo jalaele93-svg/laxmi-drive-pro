@@ -97,15 +97,11 @@ function Contact() {
               <div className="card-surface grid h-80 place-items-center bg-muted/60 p-6 text-center">
                 <div className="space-y-2">
                   <MapPin className="mx-auto size-8 text-primary" aria-hidden="true" />
-                  <p className="font-display text-base font-bold">Google Map placeholder</p>
+                  <p className="font-display text-base font-bold">Visit our offices</p>
                   <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-                    To show your location here, open Google Maps, search your address, choose Share →
-                    Embed a map, copy the link and paste it into{" "}
-                    <code className="rounded bg-background px-1.5 py-0.5 text-xs">
-                      mapEmbedUrl
-                    </code>{" "}
-                    in <code className="rounded bg-background px-1.5 py-0.5 text-xs">src/lib/site.ts</code>.
+                    Please call before visiting for directions and current training availability.
                   </p>
+                  <Button asChild variant="outline" size="sm"><a href={telHref}>Call for directions</a></Button>
                 </div>
               </div>
             )}

@@ -56,7 +56,7 @@ export const ACCEPTED_FILE_TYPES = "image/jpeg,image/jpg,image/png,application/p
 export const MAX_FILE_MB = 10;
 
 export const partnerBenefits = [
-  "Earn from your vehicle",
+  "Potential to earn based on approved assignments, vehicle usage and applicable partner terms",
   "Flexible availability",
   "Local training opportunities",
   "Digital application process",

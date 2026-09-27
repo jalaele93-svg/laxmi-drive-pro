@@ -50,6 +50,7 @@ export function Header() {
               Book Your Lesson
             </Link>
           </Button>
+          <Button asChild variant="outline" size="sm" className="hidden md:inline-flex xl:hidden"><Link to="/partner">Become a Partner</Link></Button>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
