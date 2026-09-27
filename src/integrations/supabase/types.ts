@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      instructor_roster: {
+        Row: {
+          availability: string
+          created_at: string
+          daily_capacity: number
+          experience_years: number
+          id: string
+          languages: string[]
+          name: string
+          specialty: string
+          updated_at: string
+          vehicles: string[]
+        }
+        Insert: {
+          availability?: string
+          created_at?: string
+          daily_capacity?: number
+          experience_years?: number
+          id?: string
+          languages?: string[]
+          name: string
+          specialty: string
+          updated_at?: string
+          vehicles?: string[]
+        }
+        Update: {
+          availability?: string
+          created_at?: string
+          daily_capacity?: number
+          experience_years?: number
+          id?: string
+          languages?: string[]
+          name?: string
+          specialty?: string
+          updated_at?: string
+          vehicles?: string[]
+        }
+        Relationships: []
+      }
       lesson_bookings: {
         Row: {
           amount: number | null
@@ -289,6 +328,57 @@ export type Database = {
           id?: string
           mobile?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          auto_allocate: boolean
+          created_at: string
+          email: string
+          first_slot: string
+          id: number
+          institute_name: string
+          last_slot: string
+          max_lessons_daily: number
+          online_payments: boolean
+          phone: string
+          slot_minutes: number
+          sms_enabled: boolean
+          updated_at: string
+          whatsapp_enabled: boolean
+        }
+        Insert: {
+          auto_allocate?: boolean
+          created_at?: string
+          email?: string
+          first_slot?: string
+          id?: number
+          institute_name?: string
+          last_slot?: string
+          max_lessons_daily?: number
+          online_payments?: boolean
+          phone?: string
+          slot_minutes?: number
+          sms_enabled?: boolean
+          updated_at?: string
+          whatsapp_enabled?: boolean
+        }
+        Update: {
+          auto_allocate?: boolean
+          created_at?: string
+          email?: string
+          first_slot?: string
+          id?: number
+          institute_name?: string
+          last_slot?: string
+          max_lessons_daily?: number
+          online_payments?: boolean
+          phone?: string
+          slot_minutes?: number
+          sms_enabled?: boolean
+          updated_at?: string
+          whatsapp_enabled?: boolean
         }
         Relationships: []
       }
