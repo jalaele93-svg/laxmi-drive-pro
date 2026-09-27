@@ -26,6 +26,7 @@ import { Route as PartnerTermsRouteImport } from './routes/partner-terms'
 import { Route as SafetyRulesRouteImport } from './routes/safety-rules'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as AuthenticatedPartnerApplyRouteImport } from './routes/_authenticated/partner-apply'
+import { Route as AuthenticatedPartnerDashboardRouteImport } from './routes/_authenticated/partner-dashboard'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAllocationRouteImport } from './routes/admin.allocation'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
@@ -121,6 +122,12 @@ const AuthenticatedPartnerApplyRoute =
     path: '/partner-apply',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPartnerDashboardRoute =
+  AuthenticatedPartnerDashboardRouteImport.update({
+    id: '/partner-dashboard',
+    path: '/partner-dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -184,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/partner-apply': typeof AuthenticatedPartnerApplyRoute
+  '/partner-dashboard': typeof AuthenticatedPartnerDashboardRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
@@ -210,6 +218,7 @@ export interface FileRoutesByTo {
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/partner-apply': typeof AuthenticatedPartnerApplyRoute
+  '/partner-dashboard': typeof AuthenticatedPartnerDashboardRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
@@ -239,6 +248,7 @@ export interface FileRoutesById {
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/_authenticated/partner-apply': typeof AuthenticatedPartnerApplyRoute
+  '/_authenticated/partner-dashboard': typeof AuthenticatedPartnerDashboardRoute
   '/admin/allocation': typeof AdminAllocationRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/drivers': typeof AdminDriversRoute
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/safety-rules'
     | '/testimonials'
     | '/partner-apply'
+    | '/partner-dashboard'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/safety-rules'
     | '/testimonials'
     | '/partner-apply'
+    | '/partner-dashboard'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
@@ -322,6 +334,7 @@ export interface FileRouteTypes {
     | '/safety-rules'
     | '/testimonials'
     | '/_authenticated/partner-apply'
+    | '/_authenticated/partner-dashboard'
     | '/admin/allocation'
     | '/admin/customers'
     | '/admin/drivers'
@@ -473,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPartnerApplyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/partner-dashboard': {
+      id: '/_authenticated/partner-dashboard'
+      path: '/partner-dashboard'
+      fullPath: '/partner-dashboard'
+      preLoaderRoute: typeof AuthenticatedPartnerDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -541,10 +561,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedPartnerApplyRoute: typeof AuthenticatedPartnerApplyRoute
+  AuthenticatedPartnerDashboardRoute: typeof AuthenticatedPartnerDashboardRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPartnerApplyRoute: AuthenticatedPartnerApplyRoute,
+  AuthenticatedPartnerDashboardRoute: AuthenticatedPartnerDashboardRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
