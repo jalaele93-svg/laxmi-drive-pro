@@ -159,6 +159,8 @@ export type Database = {
           vehicle_make: string
           vehicle_model: string
           vehicle_type: Database["public"]["Enums"]["partner_vehicle_type"]
+          vehicle_verified: boolean
+          vehicle_verified_at: string | null
         }
         Insert: {
           address: string
@@ -205,6 +207,8 @@ export type Database = {
           vehicle_make: string
           vehicle_model: string
           vehicle_type: Database["public"]["Enums"]["partner_vehicle_type"]
+          vehicle_verified?: boolean
+          vehicle_verified_at?: string | null
         }
         Update: {
           address?: string
@@ -251,6 +255,8 @@ export type Database = {
           vehicle_make?: string
           vehicle_model?: string
           vehicle_type?: Database["public"]["Enums"]["partner_vehicle_type"]
+          vehicle_verified?: boolean
+          vehicle_verified_at?: string | null
         }
         Relationships: []
       }
