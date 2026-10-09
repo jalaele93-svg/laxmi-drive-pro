@@ -1,4 +1,8 @@
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import { Outlet, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { LogOut } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -35,6 +39,15 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminLayout() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    const { error } = await supabase.auth.signOut();
+    if (error) { toast.error("Could not sign out. Please try again."); return; }
+    await navigate({ to: "/auth", search: { redirect: "/admin" }, replace: true });
+  }
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-muted/40">
@@ -46,6 +59,7 @@ function AdminLayout() {
               Laxmi Driving Training — Admin
             </span>
             <Badge variant="outline" className="ml-auto border-transparent bg-accent/15 text-accent-foreground">Staff</Badge>
+            <Button variant="ghost" size="icon" aria-label="Sign out" title="Sign out" onClick={signOut}><LogOut className="size-4" /></Button>
           </header>
           <main className="min-w-0 flex-1 p-4 sm:p-6">
             <div className="mx-auto flex max-w-6xl flex-col gap-6">
