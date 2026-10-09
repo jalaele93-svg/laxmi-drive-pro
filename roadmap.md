@@ -1,4 +1,5 @@
 # Production upgrade
+- [ ] Upgrade admin controls: booking editing, instructor roster, filters, exports and safe sign-out.
 - [x] Save real lesson requests and manage them securely in admin.
 - [x] Replace demo admin data and actions across bookings, payments, instructors, allocation, customers, reports and settings.
 - [x] Finish partner dashboard, staff verification workflow, payment evidence and document access.
