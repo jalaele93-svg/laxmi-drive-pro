@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react";
+import { Download, RefreshCw } from "lucide-react";
+import { BookingEditor, InstructorEditor } from "@/components/admin/AdminEditors";
+import { downloadCsv } from "@/lib/admin-export";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AdminPageHeader, StatCard } from "@/components/admin/AdminUI";
@@ -16,7 +19,7 @@ const paymentStates = ["Unpaid", "Pending verification", "Paid", "Refunded"];
 
 function useAdminData(view: View) {
   const bookings = useQuery({ queryKey: ["staff-bookings"], queryFn: listBookings, enabled: view !== "settings" && view !== "drivers" && view !== "partners" });
-  const instructors = useQuery({ queryKey: ["staff-instructors"], queryFn: listInstructors, enabled: view === "drivers" || view === "allocation" || view === "overview" });
+  const instructors = useQuery({ queryKey: ["staff-instructors"], queryFn: listInstructors, enabled: ["drivers", "allocation", "overview", "orders", "payments"].includes(view) });
   const partners = useQuery({ queryKey: ["staff-partners"], queryFn: listPartners, enabled: view === "partners" || view === "overview" });
   const documents = useQuery({ queryKey: ["staff-documents"], queryFn: listPartnerDocuments, enabled: view === "partners" });
   return { bookings, instructors, partners, documents };
@@ -25,8 +28,8 @@ function useSave() {
   const qc = useQueryClient();
   return useMutation({ mutationFn: async ({ table, id, changes }: { table: "lesson_bookings" | "instructor_roster" | "partner_applications" | "partner_documents"; id: string; changes: Record<string, unknown> }) => {
     // Each table is staff-only under database access policies; the type-specific payload is checked by the database.
-    const { error } = await supabase.from(table).update(changes as never).eq("id", id);
-    if (error) throw error;
+    const { data, error } = await supabase.from(table).update(changes as never).eq("id", id).select("id").single();
+    if (error || !data) throw error ?? new Error("Record could not be updated. Check your staff access.");
   }, onSuccess: () => { qc.invalidateQueries(); toast.success("Saved"); }, onError: (error) => toast.error(friendlyError(error)) });
 }
 function SelectField({ label, value, choices, onChange, disabled = false }: { label: string; value: string; choices: readonly string[]; onChange: (v: string) => void; disabled?: boolean }) {
@@ -52,8 +55,20 @@ function BookingRow({ b, instructors, save, mode }: { b: Booking; instructors: I
 function BookingList({ bookings, instructors, save, mode }: { bookings: Booking[]; instructors: Instructor[]; save: ReturnType<typeof useSave>; mode: View }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
-  const rows = bookings.filter((b) => (filter === "All" || b.status === filter) && `${b.full_name} ${b.mobile} ${b.email} ${b.vehicle_type}`.toLowerCase().includes(query.toLowerCase()));
-  return <section className="space-y-4"><div className="flex flex-wrap gap-3"><Input aria-label="Search lesson requests" placeholder="Search name, mobile, email or vehicle" className="max-w-xs" value={query} onChange={(e) => setQuery(e.target.value)} />{mode === "orders" && <SelectField label="Status" value={filter} choices={["All", ...bookingStates]} onChange={setFilter} />}</div><div className="border-t border-border">{rows.map((b) => <BookingRow key={b.id} b={b} instructors={instructors} save={save} mode={mode} />)}{rows.length === 0 && <p className="py-8 text-sm text-muted-foreground">No matching lesson requests yet.</p>}</div></section>;
+  const [vehicle, setVehicle] = useState("All");
+  const [date, setDate] = useState("");
+  const [page, setPage] = useState(0);
+  const rows = bookings.filter((b) => (filter === "All" || (mode === "payments" ? b.payment_status === filter : filter === "Unassigned" ? !b.instructor : b.status === filter)) && (vehicle === "All" || b.vehicle_type === vehicle) && (!date || b.preferred_date === date) && `${b.full_name} ${b.mobile} ${b.email} ${b.vehicle_type}`.toLowerCase().includes(query.toLowerCase()));
+  const pageCount = Math.max(1, Math.ceil(rows.length / 20));
+  const currentPage = Math.min(page, pageCount - 1);
+  return <section className="space-y-4"><div className="flex flex-wrap items-end gap-3">
+    <label className="grid gap-1 text-xs font-semibold text-muted-foreground">Search<Input aria-label="Search lesson requests" placeholder="Name, mobile or email" className="max-w-xs" value={query} onChange={(e) => { setQuery(e.target.value); setPage(0); }} /></label>
+    <SelectField label={mode === "payments" ? "Payment filter" : "Status filter"} value={filter} choices={["All", ...(mode === "payments" ? paymentStates : mode === "allocation" ? ["Unassigned", ...bookingStates] : bookingStates)]} onChange={(v) => { setFilter(v); setPage(0); }} />
+    <SelectField label="Vehicle filter" value={vehicle} choices={["All", "Car", "Bike", "Auto", "Scooter"]} onChange={(v) => { setVehicle(v); setPage(0); }} />
+    <label className="grid gap-1 text-xs font-semibold text-muted-foreground">Lesson date<Input aria-label="Filter lesson date" type="date" className="w-40" value={date} onChange={(e) => { setDate(e.target.value); setPage(0); }} /></label>
+    <Button variant="outline" size="sm" disabled={!rows.length} onClick={() => downloadCsv("laxmi-lessons.csv", ["ID", "Name", "Mobile", "Email", "Vehicle", "Date", "Time", "Instructor", "Status", "Payment", "Amount INR"], rows.map((b) => [b.id, b.full_name, b.mobile, b.email, b.vehicle_type, b.preferred_date, b.preferred_time, b.instructor, b.status, b.payment_status, b.amount]))}><Download className="size-4" />Export</Button>
+    {(query || date || vehicle !== "All" || filter !== "All") && <Button variant="ghost" size="sm" onClick={() => { setQuery(""); setDate(""); setVehicle("All"); setFilter("All"); setPage(0); }}>Clear filters</Button>}
+  </div><p className="text-xs text-muted-foreground">{rows.length} matching requests</p><div className="border-t border-border">{rows.slice(currentPage * 20, (currentPage + 1) * 20).map((b) => <BookingRow key={b.id} b={b} instructors={instructors} save={save} mode={mode} />)}{rows.length === 0 && <p className="py-8 text-sm text-muted-foreground">No matching lesson requests yet.</p>}</div>{pageCount > 1 && <div className="flex items-center justify-between"><Button variant="outline" size="sm" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>Previous</Button><span className="text-sm">Page {currentPage + 1} of {pageCount}</span><Button variant="outline" size="sm" disabled={currentPage + 1 >= pageCount} onClick={() => setPage(currentPage + 1)}>Next</Button></div>}</section>;
 }
 function Partners({ partners, documents, save }: { partners: Partner[]; documents: Awaited<ReturnType<typeof listPartnerDocuments>>; save: ReturnType<typeof useSave> }) {
   const [selected, setSelected] = useState<string | null>(null);
