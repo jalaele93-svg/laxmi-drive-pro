@@ -11,6 +11,8 @@ import { courses, telHref } from "@/lib/site";
 export const Route = createFileRoute("/car-training")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Car Driving Training — Beginner & Advanced | Laxmi Driving Training" },
       {
         name: "description",

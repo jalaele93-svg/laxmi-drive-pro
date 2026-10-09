@@ -16,6 +16,8 @@ export const Route = createFileRoute("/book")({
   },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Book a Driving Lesson — Laxmi Driving Training" },
       {
         name: "description",

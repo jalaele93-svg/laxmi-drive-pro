@@ -12,6 +12,8 @@ import { faqs } from "@/lib/site";
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Frequently Asked Questions — Laxmi Driving Training" },
       {
         name: "description",

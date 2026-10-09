@@ -7,6 +7,8 @@ import { site } from "@/lib/site";
 export const Route = createFileRoute("/partner-terms")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Partner Terms & Conditions | Laxmi Driving Training" },
       {
         name: "description",

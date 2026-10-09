@@ -14,3 +14,4 @@
 - Payment status is recorded separately from payment preference; a selected UPI/card method never proves money was received.
 - Partner approval is enforced in the database and requires verified payment, required documents, and a staff-recorded vehicle inspection.
 - Operational admin pages read live staff-only records; public marketing content remains file-managed until a content editor is requested.
+- Admin record editors are shared dialog tools and CSV downloads escape formula-like cells; this keeps editing consistent and exports safe to open in spreadsheets.

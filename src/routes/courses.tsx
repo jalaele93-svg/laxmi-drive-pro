@@ -8,6 +8,8 @@ import { courses } from "@/lib/site";
 export const Route = createFileRoute("/courses")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Courses & Pricing — Car, Bike & Scooter Classes | Laxmi Driving Training" },
       {
         name: "description",
