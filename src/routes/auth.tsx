@@ -14,13 +14,15 @@ export const Route = createFileRoute("/auth")({
     typeof search["redirect"] === "string" ? { redirect: search["redirect"] } : {},
   head: () => ({
     meta: [
-      { title: "Partner Login & Registration | Laxmi Driving Training" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Staff & Staff & Partner Login | Laxmi Driving Training" },
       {
         name: "description",
         content:
-          "Sign in or create your Laxmi Driving Training partner account to apply, upload documents and track your vehicle partner application.",
+          "Sign in to manage Laxmi Driving Training staff operations or track your vehicle partner application.",
       },
-      { property: "og:title", content: "Partner Login | Laxmi Driving Training" },
+      { property: "og:title", content: "Staff & Partner Login | Laxmi Driving Training" },
       {
         property: "og:description",
         content: "Sign in to your Laxmi Driving Training vehicle partner account.",
@@ -49,6 +51,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   const target = safePath(redirect);
+  const staffLogin = target.startsWith("/admin");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -110,9 +113,9 @@ function AuthPage() {
   return (
     <>
       <PageHero
-        eyebrow="Partner account"
-        title={mode === "signin" ? "Partner Login" : "Create Your Partner Account"}
-        description="Use your partner account to apply, upload vehicle documents and track your application status."
+        eyebrow={staffLogin ? "Staff workspace" : "Partner account"}
+        title={mode === "signin" ? staffLogin ? "Admin Login" : "Partner Login" : staffLogin ? "Create Your Account" : "Create Your Partner Account"}
+        description={staffLogin ? "Sign in with your authorised staff account." : "Use your partner account to apply, upload vehicle documents and track your application status."}
       />
 
       <section className="section-y">

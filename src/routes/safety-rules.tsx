@@ -7,6 +7,8 @@ import { safetyRules } from "@/lib/site";
 export const Route = createFileRoute("/safety-rules")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Road Safety Rules for Drivers & Riders | Laxmi Driving Training" },
       {
         name: "description",

@@ -10,7 +10,9 @@ import { documentTypes, MAX_FILE_MB, ACCEPTED_FILE_TYPES, statusTone } from "@/l
 import { site, telHref, whatsappHref } from "@/lib/site";
 
 export const Route = createFileRoute("/_authenticated/partner-dashboard")({
-  head: () => ({ meta: [{ title: "My Vehicle Partner Applications | Laxmi Driving Training" }, { name: "robots", content: "noindex, nofollow" }] }),
+  head: () => ({ meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },{ title: "My Vehicle Partner Applications | Laxmi Driving Training" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: PartnerDashboard,
 });
 
