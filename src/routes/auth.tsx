@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { Loader2, LogIn, UserPlus } from "lucide-react";
+import { Loader2, LogIn, UserPlus, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { PageHero } from "@/components/site/Section";
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { title: "Staff & Staff & Partner Login | Laxmi Driving Training" },
+      { title: "Staff Registration & Partner Login | Laxmi Driving Training" },
       {
         name: "description",
         content:
@@ -36,9 +36,11 @@ const fieldClass =
   "h-12 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring/30";
 
 function safePath(value: string | undefined): string {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return "/partner-dashboard";
+  if (!value || !value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u001f]/.test(value)) return "/partner-dashboard";
   return value;
 }
+
+const ownerEmail = "inofdriving@gmail.com";
 
 function AuthPage() {
   const { redirect } = Route.useSearch();
@@ -49,37 +51,81 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
+  const [formError, setFormError] = useState("");
+  const [resendAfter, setResendAfter] = useState(0);
 
   const target = safePath(redirect);
   const staffLogin = target.startsWith("/admin");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: target, replace: true });
-    });
+    let active = true;
+    async function continueAfterVerification() {
+      const { data, error } = await supabase.auth.getUser();
+      if (!active || error || !data.user) return;
+      if (!data.user.email_confirmed_at) {
+        setFormError("Please confirm your email before signing in.");
+        return;
+      }
+      if (staffLogin) {
+        const { data: allowed, error: roleError } = await supabase.rpc("is_staff", { _user_id: data.user.id });
+        if (!active) return;
+        if (roleError || !allowed) {
+          setFormError("This account does not have staff access. Sign out to use your authorised staff account.");
+          return;
+        }
+      }
+      if (active) await navigate({ to: target, replace: true });
+    }
+    void continueAfterVerification();
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
-        navigate({ to: target, replace: true });
+      if (session && (event === "SIGNED_IN" || event === "USER_UPDATED")) {
+        // Defer Auth calls until this callback releases the auth client's lock.
+        window.setTimeout(() => { if (active) void continueAfterVerification(); }, 0);
       }
     });
-    return () => sub.subscription.unsubscribe();
-  }, [navigate, target]);
+    return () => { active = false; sub.subscription.unsubscribe(); };
+  }, [navigate, target, staffLogin]);
+
+  function confirmationUrl() {
+    return `${window.location.origin}/auth?redirect=${encodeURIComponent(target)}`;
+  }
+
+  async function resendConfirmation() {
+    const address = confirmationEmail ?? (staffLogin ? ownerEmail : email.trim());
+    if (!address || Date.now() < resendAfter) return;
+    setBusy(true);
+    setFormError("");
+    try {
+      const { error } = await supabase.auth.resend({ type: "signup", email: address, options: { emailRedirectTo: confirmationUrl() } });
+      if (error) throw error;
+      setResendAfter(Date.now() + 60_000);
+      toast.success("Confirmation requested. Check your inbox and spam folder.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Could not resend the confirmation email.");
+    } finally { setBusy(false); }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
+    setFormError("");
     try {
       if (mode === "signup") {
+        if (staffLogin && email.trim().toLowerCase() !== ownerEmail) throw new Error(`Admin registration is reserved for ${ownerEmail}.`);
+        if (!fullName.trim() || !/^(?:\+91[ -]?)?[6-9]\d{9}$/.test(mobile.trim())) throw new Error("Enter your name and a valid 10-digit Indian mobile number.");
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             data: { full_name: fullName.trim(), mobile: mobile.trim() },
-            emailRedirectTo: `${window.location.origin}${target}`,
+            emailRedirectTo: confirmationUrl(),
           },
         });
         if (error) throw error;
-        toast.success("Account created. Please check your e-mail to confirm your address.");
+        setConfirmationEmail(email.trim());
+        setPassword("");
+        setResendAfter(Date.now() + 60_000);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
@@ -88,7 +134,7 @@ function AuthPage() {
         if (error) throw error;
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+      setFormError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -99,7 +145,7 @@ function AuthPage() {
     try {
       sessionStorage.setItem("ldt_after_login", target);
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+        redirect_uri: confirmationUrl(),
       });
       if (result.error) throw new Error(result.error.message ?? "Google sign-in failed");
       if (result.redirected) return;
@@ -114,13 +160,24 @@ function AuthPage() {
     <>
       <PageHero
         eyebrow={staffLogin ? "Staff workspace" : "Partner account"}
-        title={mode === "signin" ? staffLogin ? "Admin Login" : "Partner Login" : staffLogin ? "Create Your Account" : "Create Your Partner Account"}
+        title={confirmationEmail ? "Check Your Email" : mode === "signin" ? staffLogin ? "Admin Login" : "Partner Login" : staffLogin ? "Register Admin Account" : "Create Your Partner Account"}
         description={staffLogin ? "Sign in with your authorised staff account." : "Use your partner account to apply, upload vehicle documents and track your application status."}
       />
 
       <section className="section-y">
         <div className="container-page max-w-lg">
-          <form onSubmit={onSubmit} className="card-surface grid gap-5 p-6 sm:p-8">
+          {confirmationEmail ? (
+            <div className="card-surface grid gap-5 p-6 sm:p-8" role="status">
+              <MailCheck className="size-10 text-primary" aria-hidden="true" />
+              <h2 className="text-xl font-semibold">Confirm your email address</h2>
+              <p className="text-sm text-muted-foreground">Check <strong className="break-all text-foreground">{confirmationEmail}</strong> for a confirmation link, including your spam folder. {staffLogin ? "Staff access activates only after your email is verified." : "Confirm your email to activate your account."}</p>
+              <Button variant="outline" onClick={resendConfirmation} disabled={busy}>Resend confirmation email</Button>
+              <Button onClick={() => { setConfirmationEmail(null); setMode("signin"); }}>Back to sign in</Button>
+              {formError && <p role="alert" className="text-sm text-destructive">{formError}</p>}
+            </div>
+          ) : <form onSubmit={onSubmit} className="card-surface grid gap-5 p-6 sm:p-8">
+            {staffLogin && <p className="text-sm text-muted-foreground">Owner email: <strong className="break-all text-foreground">{ownerEmail}</strong>{mode === "signup" ? ". Choose your own password. Email verification is required." : ""}</p>}
+            {formError && <div role="alert" className="grid gap-2 text-sm text-destructive"><p>{formError}</p><Button type="button" variant="outline" onClick={async () => { await supabase.auth.signOut(); setFormError(""); }}>Sign out of current account</Button></div>}
             {mode === "signup" && (
               <>
                 <div className="space-y-2">
@@ -178,11 +235,11 @@ function AuthPage() {
                 type="password"
                 className={fieldClass}
                 required
-                minLength={6}
+                minLength={mode === "signup" ? 12 : 6}
                 autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 6 characters"
+                placeholder={mode === "signup" ? "At least 12 characters" : "Your password"}
               />
             </div>
 
@@ -213,22 +270,24 @@ function AuthPage() {
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              {mode === "signin" ? "New vehicle partner?" : "Already have an account?"}{" "}
-              <button
+              {mode === "signin" ? staffLogin ? "First time signing in?" : "New vehicle partner?" : "Already have an account?"}{" "}
+              <Button
                 type="button"
-                className="font-semibold text-primary hover:underline"
-                onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                variant="link"
+                className="h-auto p-0"
+                onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setFormError(""); if (staffLogin) setEmail(ownerEmail); }}
               >
-                {mode === "signin" ? "Create an account" : "Sign in instead"}
-              </button>
+                {mode === "signin" ? staffLogin ? "Register admin account" : "Create an account" : "Sign in instead"}
+              </Button>
             </p>
+            {mode === "signin" && <Button type="button" variant="link" disabled={busy} onClick={resendConfirmation}>Resend verification email</Button>}
             <p className="text-center text-xs text-muted-foreground">
               Looking for driving classes instead?{" "}
               <Link to="/book" className="font-semibold text-primary hover:underline">
                 Book a lesson
               </Link>
             </p>
-          </form>
+          </form>}
         </div>
       </section>
     </>
