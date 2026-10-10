@@ -21,8 +21,8 @@ export const site = {
   whatsappNumber: "917008891923",
   whatsappMessage: "Hello Laxmi Driving Training, I would like to book a driving lesson.",
 
-  /** [EDIT] Email address */
-  email: "info@laxmidriving.com",
+  /** Contact email address */
+  email: "inofdriving@gmail.com",
 
   /** Head office address (also used in structured data) */
   address: {
