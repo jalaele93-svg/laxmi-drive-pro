@@ -93,7 +93,8 @@ function AuthPage() {
 
   async function resendConfirmation() {
     const address = confirmationEmail ?? (staffLogin ? ownerEmail : email.trim());
-    if (!address || Date.now() < resendAfter) return;
+    if (!address) { setFormError("Enter your email address first."); return; }
+    if (Date.now() < resendAfter) { toast.info("Please wait one minute before requesting another confirmation email."); return; }
     setBusy(true);
     setFormError("");
     try {
