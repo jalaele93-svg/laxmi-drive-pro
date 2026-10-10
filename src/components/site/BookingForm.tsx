@@ -112,6 +112,9 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
           batch and timing.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
+          <Button asChild variant="outline">
+            <a href="#lesson-payment">Pay agreed fees / advance</a>
+          </Button>
           <Button asChild variant="cta">
             <a href={telHref}>
               <Phone aria-hidden="true" /> Call {site.phoneDisplay}
@@ -267,7 +270,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
         )}
       </Button>
       <p className="text-center text-xs text-muted-foreground">
-        No payment is collected now. We use your details only to contact you about your classes.
+        Sending this form does not charge you. For UPI payments, use the QR code after confirming the amount with our team.
       </p>
     </form>
   );
