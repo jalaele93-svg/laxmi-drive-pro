@@ -11,6 +11,9 @@ import { site, telHref, whatsappHref } from "@/lib/site";
 
 export const Route = createFileRoute("/_authenticated/partner-dashboard")({
   head: () => ({ meta: [
+      { name: "description", content: "Track your Laxmi Driving Training vehicle partner applications and verification status." },
+      { property: "og:title", content: "My Vehicle Partner Applications | Laxmi Driving Training" },
+      { property: "og:description", content: "Track your vehicle partner applications and verification status with Laxmi Driving Training." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },{ title: "My Vehicle Partner Applications | Laxmi Driving Training" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: PartnerDashboard,

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { BookingForm, type BookingValues } from "@/components/site/BookingForm";
 import { site, telHref, whatsappHref } from "@/lib/site";
+import { LessonPayment } from "@/components/site/LessonPayment";
 
 type VehicleSearch = { vehicle?: BookingValues["vehicleType"] };
 
@@ -66,6 +67,7 @@ function BookPage() {
           </div>
 
           <aside className="space-y-5">
+            <LessonPayment />
             <div className="card-surface space-y-4 p-6">
               <span className="grid size-12 place-items-center rounded-xl bg-primary-soft text-primary">
                 <ShieldCheck className="size-6" aria-hidden="true" />
@@ -74,8 +76,8 @@ function BookPage() {
               <ol className="grid gap-3 text-sm text-muted-foreground">
                 <li>1. You send this form.</li>
                 <li>2. We call you on your mobile number to confirm the batch and timing.</li>
-                <li>3. You visit our office, complete the paperwork and pay the fees.</li>
-                <li>4. Your first class starts on your preferred date.</li>
+                 <li>3. Pay the agreed fees or advance by UPI, or pay at our office.</li>
+                 <li>4. We verify payment and confirm your first class date.</li>
               </ol>
             </div>
             <div className="card-surface space-y-2 bg-accent-soft p-6 text-sm">
