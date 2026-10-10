@@ -1,4 +1,5 @@
 # Production upgrade
+- [x] Implement verified-owner admin registration, confirmation resend and secure role activation.
 - [x] Upgrade admin controls: booking editing, instructor roster, filters, exports and safe sign-out.
 - [ ] Verify new staff editing controls with a signed-in admin (blocked: no authorised verified admin account).
 - [x] Save real lesson requests and manage them securely in admin.
@@ -7,5 +8,5 @@
 - [ ] Verify booking and partner flows end to end.
 - [ ] Enable payment gateway for UPI and cards (blocked: provider account/approval and credentials).
 - [ ] Enable manual partner UPI collection (blocked: real UPI ID not supplied).
-- [ ] Grant initial admin access (blocked: inofdriving@gmail.com has not registered/verified an account).
+- [ ] Verify initial admin activation end to end (blocked: owner must register with their own password and confirm the email).
 - [ ] Add automated booking and partner confirmation e-mails (blocked: verified sending domain not configured).

@@ -15,3 +15,5 @@
 - Partner approval is enforced in the database and requires verified payment, required documents, and a staff-recorded vehicle inspection.
 - Operational admin pages read live staff-only records; public marketing content remains file-managed until a content editor is requested.
 - Admin record editors are shared dialog tools and CSV downloads escape formula-like cells; this keeps editing consistent and exports safe to open in spreadsheets.
+- Initial owner access is activated only by an auth lifecycle trigger matching the designated verified email, with no client-callable role-claim function; this prevents self-assigned staff privileges.
+- Email confirmation returns to the public auth page and checks the verified user and staff role before entering admin; this prevents premature access and protected-callback redirects.
