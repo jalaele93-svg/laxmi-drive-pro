@@ -1,4 +1,5 @@
 # Production upgrade
+- [ ] Implement verified-owner admin registration, confirmation resend and secure role activation.
 - [x] Upgrade admin controls: booking editing, instructor roster, filters, exports and safe sign-out.
 - [ ] Verify new staff editing controls with a signed-in admin (blocked: no authorised verified admin account).
 - [x] Save real lesson requests and manage them securely in admin.
