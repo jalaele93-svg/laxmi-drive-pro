@@ -3,7 +3,7 @@ import { courses, instructors, testimonials, faqs, safetyRules } from "@/lib/sit
 
 const text = z.string().trim().min(1, "Please complete all required fields.").max(5000);
 export const contentSchemas = {
-  courses: z.object({ id: text, vehicle: z.enum(["Car", "Motorcycle", "Scooter", "Auto"]), level: z.enum(["Beginner", "Advanced"]), title: text, price: text, duration: text, summary: text, features: z.array(text).min(1), popular: z.boolean().optional() }),
+  courses: z.object({ id: text, vehicle: z.enum(["Car", "Motorcycle", "Scooter", "Auto"]), level: z.enum(["Beginner", "Advanced"]), title: text, price: text, duration: text, summary: text, features: z.array(text).min(1), popular: z.boolean().default(false) }),
   instructors: z.object({ id: z.union([z.string(), z.number()]), name: text, role: text, experience: text, languages: text, specialities: z.array(text).min(1), initials: text.max(4) }),
   testimonials: z.object({ id: z.union([z.string(), z.number()]), name: text, course: text, rating: z.number().int().min(1).max(5), quote: text }),
   faqs: z.object({ q: text, a: text }),
