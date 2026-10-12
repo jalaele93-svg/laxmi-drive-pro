@@ -1,10 +1,12 @@
+import { useWebsiteContent, websiteContentOptions } from "@/lib/website-content-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Award, Languages } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CtaBand } from "@/components/site/CtaBand";
-import { instructors } from "@/lib/site";
+
 
 export const Route = createFileRoute("/instructors")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/instructors")({
 });
 
 function Instructors() {
+  const { instructors } = useWebsiteContent();
   return (
     <>
       <PageHero

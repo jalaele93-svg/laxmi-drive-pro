@@ -1,3 +1,4 @@
+import { useWebsiteContent, websiteContentOptions } from "@/lib/website-content-query";
 import { createFileRoute } from "@tanstack/react-router";
 import {
   Accordion,
@@ -7,10 +8,11 @@ import {
 } from "@/components/ui/accordion";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CtaBand } from "@/components/site/CtaBand";
-import { faqs } from "@/lib/site";
+
 
 export const Route = createFileRoute("/faq")({
-  head: () => ({
+  loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
+  head: ({ loaderData }) => ({
     meta: [
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -34,7 +36,7 @@ export const Route = createFileRoute("/faq")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "FAQPage",
-          mainEntity: faqs.map((f) => ({
+          mainEntity: (loaderData?.faqs ?? []).map((f) => ({
             "@type": "Question",
             name: f.q,
             acceptedAnswer: { "@type": "Answer", text: f.a },
@@ -47,6 +49,7 @@ export const Route = createFileRoute("/faq")({
 });
 
 function Faq() {
+  const { faqs } = useWebsiteContent();
   return (
     <>
       <PageHero

@@ -1,10 +1,12 @@
+import { useWebsiteContent, websiteContentOptions } from "@/lib/website-content-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { ShieldCheck, TriangleAlert } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CtaBand } from "@/components/site/CtaBand";
-import { safetyRules } from "@/lib/site";
+
 
 export const Route = createFileRoute("/safety-rules")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/safety-rules")({
 });
 
 function SafetyRules() {
+  const { safetyRules } = useWebsiteContent();
   return (
     <>
       <PageHero

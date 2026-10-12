@@ -1,3 +1,4 @@
+import { useWebsiteContent, websiteContentOptions } from "@/lib/website-content-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -17,9 +18,10 @@ import { CtaBand } from "@/components/site/CtaBand";
 import { VehicleTrainingSlider } from "@/components/site/VehicleTrainingSlider";
 import heroCar from "@/assets/hero-car.jpg";
 import scooterImg from "@/assets/scooter-training.jpg";
-import { courses, safetyRules, site, telHref, testimonials, trustStats, whatsappHref } from "@/lib/site";
+import { site, telHref, trustStats, whatsappHref } from "@/lib/site";
 
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
     meta: [
       { title: "Laxmi Driving Training — Car, Bike & Scooter Driving School" },
@@ -44,7 +46,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const featured = courses.filter((c) => ["car-beginner", "bike-beginner", "scooter-beginner"].includes(c.id));
+  const { courses, testimonials, safetyRules } = useWebsiteContent();
+  const featured = courses.filter((c) => c.level === "Beginner").slice(0, 3);
 
   return (
     <>

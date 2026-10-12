@@ -1,10 +1,12 @@
+import { useWebsiteContent, websiteContentOptions } from "@/lib/website-content-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Quote, Star } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CtaBand } from "@/components/site/CtaBand";
-import { testimonials } from "@/lib/site";
+
 
 export const Route = createFileRoute("/testimonials")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/testimonials")({
 });
 
 function Testimonials() {
+  const { testimonials } = useWebsiteContent();
   return (
     <>
       <PageHero
