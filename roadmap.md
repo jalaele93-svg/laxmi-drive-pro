@@ -2,7 +2,7 @@
 - [x] Add customer UPI QR collection for lesson fees and agreed booking advances, with manual receipt verification.
 - [x] Implement verified-owner admin registration, confirmation resend and secure role activation.
 - [x] Upgrade admin controls: booking editing, instructor roster, filters, exports and safe sign-out.
-- [ ] Verify new staff editing controls with a signed-in admin (blocked: no authorised verified admin account).
+- [x] Verify website course and instructor editing with the authorized owner; saved changes read back on public pages.
 - [x] Save real lesson requests and manage them securely in admin.
 - [x] Replace demo admin data and actions across bookings, payments, instructors, allocation, customers, reports and settings.
 - [x] Finish partner dashboard, staff verification workflow, payment evidence and document access.
@@ -12,4 +12,4 @@
 - [ ] Verify initial admin activation end to end (blocked: owner must register with their own password and confirm the email).
 - [ ] Add automated booking and partner confirmation e-mails (blocked: verified sending domain not configured).
 
-- [ ] Add website course and instructor editors plus review and FAQ editing; connect saved changes to public pages.
+- [x] Add website course and instructor editors plus reviews, FAQ and safety rules; connect saved changes to public pages.
