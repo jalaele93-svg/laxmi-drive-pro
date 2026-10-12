@@ -1,7 +1,19 @@
-import { requireTester } from "../_shared/test-auth.ts";
+
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS"};
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,"Content-Type":"application/json"}});
+
+async function requireTester(req: Request): Promise<boolean> {
+  const token = req.headers.get("authorization")?.match(/^Bearer (.+)$/i)?.[1];
+  const allowed = Deno.env.get("RAZORPAY_TEST_ALLOWED_EMAIL")?.trim().toLowerCase();
+  const url = Deno.env.get("SUPABASE_URL");
+  const anon = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!token || !allowed || !url || !anon) return false;
+  const client = createClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data, error } = await client.auth.getUser(token);
+  return !error && !!data.user?.email && data.user.email.toLowerCase() === allowed;
+}
+
 Deno.serve(async req=>{
  if(req.method==="OPTIONS") return new Response(null,{headers:cors});
  if(req.method!=="POST") return json({error:"Method not allowed"},405);
