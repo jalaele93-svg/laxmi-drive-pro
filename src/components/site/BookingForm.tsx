@@ -268,9 +268,13 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
       </Field>
 
       {values.paymentChoice === "UPI" && (
-        <p className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-          Your UPI QR code will appear after your booking request is saved. Confirm the amount with our team before paying.
-        </p>
+        <div className="rounded-xl border p-4">
+          <p className="mb-3 text-sm font-semibold">UPI payment selected</p>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Confirm your booking fee or advance with our team before paying. You can scan the QR on a laptop using a UPI app on your phone. Please submit your booking request as well.
+          </p>
+          <LessonPayment />
+        </div>
       )}
       {submitError && <p role="alert" className="text-sm text-destructive">{submitError}</p>}
       <Button type="submit" variant="cta" size="xl" disabled={status === "sending"}>
@@ -283,7 +287,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
         )}
       </Button>
       <p className="text-center text-xs text-muted-foreground">
-        Sending this form does not charge you. For UPI payments, use the QR code after confirming the amount with our team.
+        Submitting this form does not charge you. UPI payments are separate and must be verified by our team.
       </p>
     </form>
   );
