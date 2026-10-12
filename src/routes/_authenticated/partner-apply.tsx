@@ -79,6 +79,20 @@ type Form = Record<FormKey, string>;
 
 const mobileRe = /^[6-9]\d{9}$/;
 
+async function withTimeout<T>(operation: PromiseLike<T>, label: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      Promise.resolve(operation),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${label} timed out. Please check your partner dashboard before trying again.`)), 30000);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 function validate(step: number, f: Form, files: Record<string, File>): string | null {
   const need = (keys: FormKey[]) => keys.find((k) => !f[k].trim());
   if (step === 0) {
@@ -148,6 +162,7 @@ function PartnerApply() {
   const [files, setFiles] = useState<Record<string, File>>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [savedApplication, setSavedApplication] = useState<{ id: string; no: string } | null>(null);
   const [done, setDone] = useState<{ no: string; ref: boolean } | null>(null);
 
   const set = (k: FormKey, v: string) => setF((p) => ({ ...p, [k]: v }));
@@ -177,11 +192,13 @@ function PartnerApply() {
   const submit = async () => {
     const e = validate(4, f, files);
     setError(e);
-    if (e || !user) return;
+    if (e || !user || busy) return;
     setBusy(true);
     try {
       const hasRef = !!f.payment_reference?.trim();
-      const { data: app, error: insErr } = await supabase
+      const { data: app, error: insErr } = savedApplication
+        ? { data: { id: savedApplication.id, application_no: savedApplication.no }, error: null }
+        : await withTimeout(supabase
         .from("partner_applications")
         .insert({
           user_id: user.id,
@@ -221,15 +238,16 @@ function PartnerApply() {
           submitted_at: new Date().toISOString(),
         })
         .select("id, application_no")
-        .single();
+        .single(), "Saving application");
       if (insErr || !app) throw insErr ?? new Error("Could not save");
+      setSavedApplication({ id: app.id, no: app.application_no ?? app.id });
 
       for (const [docType, file] of Object.entries(files)) {
         const ext = file.name.split(".").pop() ?? "bin";
         const path = `${user.id}/${app.id}/${docType}-${Date.now()}.${ext}`;
-        const up = await supabase.storage.from("partner-documents").upload(path, file, { contentType: file.type });
+        const up = await withTimeout(supabase.storage.from("partner-documents").upload(path, file, { contentType: file.type }), `Uploading ${docType}`);
         if (up.error) throw up.error;
-        const { error: dErr } = await supabase.from("partner_documents").insert({
+        const { error: dErr } = await withTimeout(supabase.from("partner_documents").insert({
           application_id: app.id,
           user_id: user.id,
           doc_type: docType,
@@ -237,14 +255,16 @@ function PartnerApply() {
           file_name: file.name,
           mime_type: file.type,
           file_size: file.size,
-        });
+        }), `Saving ${docType} details`);
         if (dErr) throw dErr;
       }
       setDone({ no: app.application_no ?? app.id, ref: hasRef });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error(err);
-      toast.error("Application could not be submitted. Please try again.");
+      const message = err instanceof Error ? err.message : "Application could not be submitted.";
+      setError(`${message} Check your partner dashboard before submitting again to avoid duplicate applications.`);
+      toast.error("Submission interrupted. Please check the error message.");
     } finally {
       setBusy(false);
     }
