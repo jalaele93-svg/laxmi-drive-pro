@@ -1,11 +1,13 @@
+import { useWebsiteContent, websiteContentOptions } from "@/lib/website-content-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Info } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CourseCard } from "@/components/site/CourseCard";
 import { CtaBand } from "@/components/site/CtaBand";
-import { courses } from "@/lib/site";
+
 
 export const Route = createFileRoute("/courses")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -29,6 +31,7 @@ export const Route = createFileRoute("/courses")({
 });
 
 function Courses() {
+  const { courses } = useWebsiteContent();
   const groups = [
     { key: "Car", title: "Car Driving Courses" },
     { key: "Auto", title: "Auto-Rickshaw Courses" },
@@ -46,7 +49,7 @@ function Courses() {
 
       <section className="section-y">
         <div className="container-page space-y-14">
-          {groups.map((g) => (
+          {groups.filter((g) => courses.some((c) => c.vehicle === g.key)).map((g) => (
             <div key={g.key} className="space-y-8">
               <SectionHeading align="left" eyebrow={g.key} title={g.title} as="h2" />
               <div className="grid gap-6 md:grid-cols-2">

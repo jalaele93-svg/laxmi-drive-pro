@@ -14,7 +14,7 @@
 - Payment status is recorded separately from payment preference; a selected UPI/card method never proves money was received.
 - Customer lesson collection uses a manual UPI panel on the booking page, separate from partner enrollment payments; QR scans and payment-app links never update payment status because receipt requires independent staff verification.
 - Partner approval is enforced in the database and requires verified payment, required documents, and a staff-recorded vehicle inspection.
-- Operational admin pages read live staff-only records; public marketing content remains file-managed until a content editor is requested.
+- Public courses, instructor profiles, reviews, FAQs and safety rules use validated website_content overrides through public server reads and shared query loaders; staff-only writes update website content without exposing operational roster data.
 - Admin record editors are shared dialog tools and CSV downloads escape formula-like cells; this keeps editing consistent and exports safe to open in spreadsheets.
 - Initial owner access is activated only by an auth lifecycle trigger matching the designated verified email, with no client-callable role-claim function; this prevents self-assigned staff privileges.
 - Email confirmation returns to the public auth page and checks the verified user and staff role before entering admin; this prevents premature access and protected-callback redirects.

@@ -10,6 +10,7 @@ import {
   Settings,
   CarFront,
   ArrowLeft,
+  FilePenLine,
 } from "lucide-react";
 
 import {
@@ -27,10 +28,11 @@ import {
 
 const items = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
+  { title: "Edit website", url: "/admin/website", icon: FilePenLine },
   { title: "Orders", url: "/admin/orders", icon: ClipboardList },
   { title: "Partners", url: "/admin/partners", icon: CarFront },
   { title: "Payments", url: "/admin/payments", icon: CreditCard },
-  { title: "Drivers", url: "/admin/drivers", icon: IdCard },
+  { title: "Instructor roster", url: "/admin/drivers", icon: IdCard },
   { title: "Allocation", url: "/admin/allocation", icon: CalendarClock },
   { title: "Customers", url: "/admin/customers", icon: Users },
   { title: "Reports", url: "/admin/reports", icon: BarChart3 },

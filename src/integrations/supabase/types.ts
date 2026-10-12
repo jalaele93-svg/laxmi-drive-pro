@@ -409,6 +409,33 @@ export type Database = {
         }
         Relationships: []
       }
+      website_content: {
+        Row: {
+          content: Json
+          id: string
+          section: string
+          sort_order: number
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          content: Json
+          id: string
+          section: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          content?: Json
+          id?: string
+          section?: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

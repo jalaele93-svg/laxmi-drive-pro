@@ -1,3 +1,4 @@
+import { useWebsiteContent, websiteContentOptions } from "@/lib/website-content-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarCheck, Check, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,10 @@ import { CourseCard } from "@/components/site/CourseCard";
 import { CtaBand } from "@/components/site/CtaBand";
 import heroBike from "@/assets/hero-bike.jpg";
 import scooterImg from "@/assets/scooter-training.jpg";
-import { courses, telHref } from "@/lib/site";
+import { telHref } from "@/lib/site";
 
 export const Route = createFileRoute("/bike-training")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -32,6 +34,7 @@ export const Route = createFileRoute("/bike-training")({
 });
 
 function BikeTraining() {
+  const { courses } = useWebsiteContent();
   const twoWheeler = courses.filter((c) => c.vehicle === "Motorcycle" || c.vehicle === "Scooter");
 
   return (

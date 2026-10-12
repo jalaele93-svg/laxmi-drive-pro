@@ -1,3 +1,4 @@
+import { useWebsiteContent, websiteContentOptions } from "@/lib/website-content-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarCheck, Check, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,9 +7,10 @@ import { CourseCard } from "@/components/site/CourseCard";
 import { CtaBand } from "@/components/site/CtaBand";
 import heroCar from "@/assets/hero-car.jpg";
 import carTraining from "@/assets/car-training.jpg";
-import { courses, telHref } from "@/lib/site";
+import { telHref } from "@/lib/site";
 
 export const Route = createFileRoute("/car-training")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
     meta: [
       { property: "og:type", content: "website" },
@@ -32,6 +34,7 @@ export const Route = createFileRoute("/car-training")({
 });
 
 function CarTraining() {
+  const { courses } = useWebsiteContent();
   const carCourses = courses.filter((c) => c.vehicle === "Car");
   const steps = [
     { title: "Class 1–5: The basics", body: "Seat and mirror setting, clutch, brake, accelerator and slow straight driving." },
