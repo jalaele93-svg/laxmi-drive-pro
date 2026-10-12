@@ -1,3 +1,4 @@
+import { requireTester } from "../_shared/test-auth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const cors = {"Access-Control-Allow-Origin":"*", "Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type", "Access-Control-Allow-Methods":"POST, OPTIONS"};
 const prices: Record<string,string> = {Car:"RAZORPAY_TEST_CAR_PAISE",Bike:"RAZORPAY_TEST_BIKE_PAISE",Scooter:"RAZORPAY_TEST_SCOOTER_PAISE",Auto:"RAZORPAY_TEST_AUTO_PAISE"};
@@ -5,6 +6,7 @@ const json = (body:unknown,status=200)=>new Response(JSON.stringify(body),{statu
 Deno.serve(async req=>{
   if(req.method==="OPTIONS") return new Response(null,{headers:cors});
   if(req.method!=="POST") return json({error:"Method not allowed"},405);
+  if(!(await requireTester(req))) return json({error:"Sign in with the authorized test email"},401);
   try {
     const keyId=Deno.env.get("RAZORPAY_TEST_KEY_ID")??"";
     const secret=Deno.env.get("RAZORPAY_TEST_KEY_SECRET")??"";
