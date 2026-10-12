@@ -8,6 +8,13 @@
       "when": 1791641211139,
       "tag": "0000_activate_verified_owner_admin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791792399954,
+      "tag": "0001_website_content_editor",
+      "breakpoints": true
     }
   ]
 }
