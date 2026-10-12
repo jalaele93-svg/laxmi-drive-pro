@@ -11,3 +11,5 @@
 - [ ] Enable manual partner UPI collection (blocked: real UPI ID not supplied).
 - [ ] Verify initial admin activation end to end (blocked: owner must register with their own password and confirm the email).
 - [ ] Add automated booking and partner confirmation e-mails (blocked: verified sending domain not configured).
+
+- [ ] Add website course and instructor editors plus review and FAQ editing; connect saved changes to public pages.
