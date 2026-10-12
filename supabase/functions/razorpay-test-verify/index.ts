@@ -14,7 +14,7 @@ Deno.serve(async req=>{
   const key=await crypto.subtle.importKey("raw",encoder.encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
   const mac=new Uint8Array(await crypto.subtle.sign("HMAC",key,encoder.encode(orderId+"|"+paymentId)));
   const expected=Array.from(mac).map(b=>b.toString(16).padStart(2,"0")).join("");
-  if(signature.length!==expected.length||![...expected].reduce((acc,c,i)=>acc|(c.charCodeAt(0)^signature.charCodeAt(i)),0)===0)return json({error:"Signature invalid"},400);
+  if(signature.length!==expected.length||[...expected].reduce((acc,c,i)=>acc|(c.charCodeAt(0)^signature.charCodeAt(i)),0)!==0)return json({error:"Signature invalid"},400);
   const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const {data:record,error:readError}=await db.from("razorpay_test_payments").select("*").eq("razorpay_order_id",orderId).single();
   if(readError||!record)return json({error:"Unknown order"},404);
