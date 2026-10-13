@@ -3,6 +3,7 @@ import { CheckCircle2, Loader2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { site, telHref } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";
+import { LessonPayment } from "./LessonPayment";
 
 export type BookingValues = {
   fullName: string;
@@ -130,7 +131,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
             Book another lesson
           </Button>
         </div>
-
+        <div className="w-full text-left"><LessonPayment id="booking-success-payment" learnerName={values.fullName} mobile={values.mobile} /></div>
       </div>
     );
   }
@@ -259,6 +260,8 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
         </select>
       </Field>
 
+      {values.paymentChoice === "UPI" && <LessonPayment id="booking-upi-payment" learnerName={values.fullName} mobile={values.mobile} />}
+      {values.paymentChoice === "Card" && <p className="text-sm text-muted-foreground">Online card payments are not configured yet. Our team will confirm available payment options.</p>}
       {submitError && <p role="alert" className="text-sm text-destructive">{submitError}</p>}
       <Button type="submit" variant="cta" size="xl" disabled={status === "sending"}>
         {status === "sending" ? (

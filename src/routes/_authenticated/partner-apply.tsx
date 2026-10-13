@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { CheckCircle2, Loader2, ShieldAlert } from "lucide-react";
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { site } from "@/lib/site";
+import { savePartnerDraft, finalizePartnerApplication } from "@/lib/partner-submission.functions";
+import { uploadPartnerFile } from "@/lib/partner-upload";
 import {
   ACCEPTED_FILE_TYPES,
   DEPOSIT_AMOUNT,
@@ -149,13 +151,55 @@ function PartnerApply() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<{ no: string; ref: boolean } | null>(null);
+  const applicationId = useRef<string | null>(null);
+  const controllers = useRef<Record<string, AbortController>>({});
+  const versions = useRef<Record<string, string>>({});
+  const [uploadStates, setUploadStates] = useState<Record<string, { state: string; percent: number; error?: string }>>({});
+  const [restoring, setRestoring] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    const restore = async () => {
+      try {
+        const saved = localStorage.getItem(`partner-draft:${user.id}`);
+        if (!saved) return;
+        applicationId.current = saved;
+        const { data, error } = await supabase.from("partner_applications").select("*").eq("id", saved).eq("user_id", user.id).single();
+        if (error) throw new Error("Could not restore your draft. Refresh to retry before submitting.");
+        if (!active) return;
+        if (!["Draft", "Correction Required", "Payment Pending", "Submitted"].includes(data.status)) {
+          setDone({ no: data.application_no ?? data.id, ref: Boolean(data.payment_reference) });
+          return;
+        }
+        setF(prev => {
+          const next = { ...prev };
+          for (const key of Object.keys(prev) as FormKey[]) {
+            if (key === "terms") next[key] = data.terms_accepted ? "yes" : "";
+            else if (key in data) next[key] = String(data[key as keyof typeof data] ?? "");
+          }
+          return next;
+        });
+        const { data: docs, error: docError } = await supabase.from("partner_documents").select("doc_type").eq("application_id", saved).eq("is_current", true);
+        if (docError) throw new Error("Your documents could not be checked. Refresh to retry.");
+        setUploadStates(Object.fromEntries((docs ?? []).map(d => [d.doc_type, { state: "saved", percent: 100 }])));
+      } catch (e) { if (active) setError(e instanceof Error ? e.message : "Could not restore draft."); }
+      finally { if (active) setRestoring(false); }
+    };
+    void restore();
+    return () => { active = false; Object.values(controllers.current).forEach(c => c.abort()); };
+  }, [user?.id]);
 
   const set = (k: FormKey, v: string) => setF((p) => ({ ...p, [k]: v }));
 
-  const next = () => {
-    const e = validate(step, f, files);
+  const next = async () => {
+    const e = step === 2 ? documentTypes.some(d => d.required && uploadStates[d.id]?.state !== "saved") ? "Save all six required documents before continuing." : null : validate(step, f, files);
     setError(e);
     if (!e) {
+      if (step === 1) {
+        setBusy(true);
+        try { await saveDraft(); } catch (e) { setError(e instanceof Error ? e.message : "Could not save draft."); return; } finally { setBusy(false); }
+      }
       setStep((s) => s + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -172,79 +216,56 @@ function PartnerApply() {
       return;
     }
     setFiles((p) => ({ ...p, [id]: file }));
+    versions.current[id] = crypto.randomUUID();
+    setUploadStates(prev => ({ ...prev, [id]: { state: "selected", percent: 0 } }));
   };
 
+  async function saveDraft() {
+    if (!user) throw new Error("Please sign in again.");
+    if (!applicationId.current) {
+      applicationId.current = crypto.randomUUID();
+      localStorage.setItem(`partner-draft:${user.id}`, applicationId.current);
+    }
+    const { terms: _terms, payment_reference: _reference, ...values } = f;
+    return savePartnerDraft({ data: { id: applicationId.current, values: { ...values, vehicle_type: values.vehicle_type as "Car", manufacturing_year: Number(values.manufacturing_year), ownership_status: values.ownership_status as "Individual Owner", fuel_type: values.fuel_type as "Petrol", transmission: values.transmission as "Manual" } } });
+  }
+
+  async function uploadSelected() {
+    const id = applicationId.current;
+    if (!id) { setError("Save your vehicle details first."); return; }
+    setBusy(true);
+    setError(null);
+    const queue = Object.entries(files).filter(([type]) => uploadStates[type]?.state !== "saved");
+    const worker = async () => {
+      for (;;) {
+        const item = queue.shift();
+        if (!item) return;
+        const [docType, file] = item;
+        const controller = new AbortController();
+        controllers.current[docType] = controller;
+        setUploadStates(prev => ({ ...prev, [docType]: { state: "uploading", percent: 0 } }));
+        try {
+          await uploadPartnerFile({ id, docType, file, version: versions.current[docType] ?? crypto.randomUUID(), signal: controller.signal, progress: percent => setUploadStates(prev => ({ ...prev, [docType]: { state: "uploading", percent } })) });
+          setUploadStates(prev => ({ ...prev, [docType]: { state: "saved", percent: 100 } }));
+        } catch (e) { setUploadStates(prev => ({ ...prev, [docType]: { state: "failed", percent: 0, error: e instanceof Error ? e.message : "Upload failed. Retry." } })); }
+        finally { delete controllers.current[docType]; }
+      }
+    };
+    try { await Promise.all([worker(), worker()]); } finally { setBusy(false); }
+  }
+
   const submit = async () => {
-    const e = validate(4, f, files);
+    const e = [0, 1, 3, 4].map(s => validate(s, f, files)).find(Boolean) ?? (documentTypes.some(d => d.required && uploadStates[d.id]?.state !== "saved") ? "Save all required documents first." : null);
     setError(e);
     if (e || !user) return;
     setBusy(true);
     try {
-      const hasRef = !!f.payment_reference?.trim();
-      const { data: app, error: insErr } = await supabase
-        .from("partner_applications")
-        .insert({
-          user_id: user.id,
-          full_name: f.full_name.trim(),
-          mobile: f.mobile,
-          email: f.email.trim(),
-          alternate_mobile: f.alternate_mobile || null,
-          address: f.address.trim(),
-          city: f.city.trim(),
-          district: f.district.trim(),
-          state: f.state.trim(),
-          pincode: f.pincode,
-          vehicle_type: f.vehicle_type as (typeof vehicleTypes)[number],
-          registration_number: f.registration_number.trim().toUpperCase(),
-          vehicle_make: f.vehicle_make.trim(),
-          vehicle_model: f.vehicle_model.trim(),
-          manufacturing_year: Number(f.manufacturing_year),
-          fuel_type: f.fuel_type,
-          transmission: f.transmission,
-          vehicle_color: f.vehicle_color || null,
-          odometer_km: f.odometer_km ? Number(f.odometer_km) : null,
-          ownership_status: f.ownership_status as (typeof ownershipOptions)[number],
-          preferred_location: f.preferred_location,
-          preferred_use: f.preferred_use,
-          preferred_availability: f.preferred_availability,
-          bank_account_name: f.bank_account_name.trim(),
-          bank_name: f.bank_name.trim(),
-          bank_account_number: f.bank_account_number.trim(),
-          bank_ifsc: f.bank_ifsc.trim().toUpperCase(),
-          upi_id: f.upi_id || null,
-          terms_accepted: true,
-          status: "Payment Pending",
-          payment_status: hasRef ? "Under Verification" : "Pending",
-          payment_method: hasRef ? "UPI / Bank Transfer" : null,
-          payment_reference: hasRef ? f.payment_reference.trim() : null,
-          payment_paid_at: null,
-          submitted_at: new Date().toISOString(),
-        })
-        .select("id, application_no")
-        .single();
-      if (insErr || !app) throw insErr ?? new Error("Could not save");
-
-      for (const [docType, file] of Object.entries(files)) {
-        const ext = file.name.split(".").pop() ?? "bin";
-        const path = `${user.id}/${app.id}/${docType}-${Date.now()}.${ext}`;
-        const up = await supabase.storage.from("partner-documents").upload(path, file, { contentType: file.type });
-        if (up.error) throw up.error;
-        const { error: dErr } = await supabase.from("partner_documents").insert({
-          application_id: app.id,
-          user_id: user.id,
-          doc_type: docType,
-          file_path: path,
-          file_name: file.name,
-          mime_type: file.type,
-          file_size: file.size,
-        });
-        if (dErr) throw dErr;
-      }
-      setDone({ no: app.application_no ?? app.id, ref: hasRef });
+      const app = await saveDraft();
+      const result = await finalizePartnerApplication({ data: { id: app.id, terms: true, reference: f.payment_reference } });
+      setDone(result);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      console.error(err);
-      toast.error("Application could not be submitted. Please try again.");
+      setError(err instanceof Error ? err.message : "Application saved. Retry submission or check your dashboard.");
     } finally {
       setBusy(false);
     }
@@ -328,11 +349,12 @@ function PartnerApply() {
               <label key={d.id} className="flex flex-col gap-2 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm font-medium">{d.label}{d.required ? " *" : ""}</span>
                 <span className="flex items-center gap-2 text-xs">
-                  {files[d.id] && <span className="max-w-[160px] truncate text-primary">✓ {files[d.id]?.name}</span>}
-                  <input type="file" accept={ACCEPTED_FILE_TYPES} onChange={(e) => onFile(d.id, e.target.files?.[0])} className="text-xs" />
+                  <span role="status" className="max-w-[180px] text-primary">{uploadStates[d.id]?.state === "saved" ? "✓ Saved" : uploadStates[d.id]?.state === "uploading" ? `Uploading ${uploadStates[d.id]?.percent}%` : uploadStates[d.id]?.state === "failed" ? uploadStates[d.id]?.error : files[d.id] ? "Selected — not uploaded" : "Not uploaded"}</span>
+                  <input type="file" disabled={busy} accept={ACCEPTED_FILE_TYPES} onChange={(e) => onFile(d.id, e.target.files?.[0])} className="min-w-0 max-w-full text-xs" />
                 </span>
               </label>
             ))}
+            <div className="flex flex-wrap gap-3"><Button type="button" variant="cta" disabled={busy || !Object.keys(files).length} onClick={uploadSelected}>Upload / retry selected files</Button>{busy && <Button type="button" variant="outline" onClick={() => Object.values(controllers.current).forEach(c => c.abort())}>Cancel uploads</Button>}</div>
           </div>
         )}
         {step === 3 && (
@@ -377,9 +399,9 @@ function PartnerApply() {
             Back
           </Button>
           {step < 4 ? (
-            <Button variant="cta" onClick={next}>Continue</Button>
+            <Button variant="cta" disabled={busy || restoring} onClick={next}>{busy ? "Saving…" : restoring ? "Restoring draft…" : "Continue"}</Button>
           ) : (
-            <Button variant="cta" onClick={submit} disabled={busy}>
+            <Button variant="cta" onClick={submit} disabled={busy || restoring}>
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit Application (₹{DEPOSIT_AMOUNT.toLocaleString("en-IN")} advance)
             </Button>
@@ -394,7 +416,7 @@ function PaymentBox() {
   return (
     <div className="mt-6 rounded-xl border-2 border-dashed border-accent/60 p-4 text-left text-sm">
       <p className="font-semibold">₹{DEPOSIT_AMOUNT.toLocaleString("en-IN")} Partner Enrollment Advance Deposit</p>
-      {partnerPayment.upiId.startsWith("[EDIT") ? <p className="mt-2">Please contact us for verified UPI or bank payment instructions. Do not send money to an unverified account.</p> : <><p className="mt-2">UPI: <b>{partnerPayment.upiId}</b> ({partnerPayment.upiName})</p><p>Bank: {partnerPayment.bankName} · A/c {partnerPayment.accountNumber} · IFSC {partnerPayment.ifsc}</p></>}
+       {partnerPayment.upiId.startsWith("[EDIT") ? <p className="mt-2">Online payment is not configured yet. Your application can be saved without charging you. Contact us for verified partner payment instructions.</p> : <><p className="mt-2">UPI: <b>{partnerPayment.upiId}</b> ({partnerPayment.upiName})</p><p>Bank: {partnerPayment.bankName} · A/c {partnerPayment.accountNumber} · IFSC {partnerPayment.ifsc}</p></>}
       <p className="mt-2 text-xs text-muted-foreground">
         After paying, share the transaction ID on WhatsApp {site.phoneDisplay}. A transaction reference is not proof of receipt. Refunds follow the Partner Terms.
       </p>
