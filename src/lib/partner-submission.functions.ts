@@ -17,7 +17,7 @@ const details = z.object({
   bank_account_name: z.string().max(200), bank_name: z.string().max(200),
   bank_account_number: z.string().max(40), bank_ifsc: z.string().max(11), upi_id: z.string().max(200),
 });
-const editable = ["Draft", "Correction Required", "Payment Pending", "Submitted"];
+const editable: Array<"Draft" | "Correction Required" | "Payment Pending" | "Submitted"> = ["Draft", "Correction Required", "Payment Pending", "Submitted"];
 const documentType = z.enum(["rc", "insurance", "puc", "licence", "photo_front", "photo_rear", "photo_side", "photo_interior"]);
 
 export const savePartnerDraft = createServerFn({ method: "POST" })

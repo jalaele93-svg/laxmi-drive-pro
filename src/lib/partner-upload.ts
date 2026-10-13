@@ -12,7 +12,7 @@ export async function uploadPartnerFile(options: {
   // Reconcile first: a previous upload may have finished despite a lost response.
   try { await confirm(); progress(100); return; } catch { /* Not stored yet. */ }
   if (signal.aborted) throw new Error("Upload cancelled. Retry when ready.");
-  const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/upload/sign/partner-documents/${prepared.path}?token=${encodeURIComponent(prepared.token)}`;
+  const url = `${import.meta.env["VITE_SUPABASE_URL"]}/storage/v1/object/upload/sign/partner-documents/${prepared.path}?token=${encodeURIComponent(prepared.token)}`;
   try {
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
