@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 
 const text = z.string().trim().min(1).max(300);
 const details = z.object({
@@ -17,7 +18,7 @@ const details = z.object({
   bank_account_name: z.string().max(200), bank_name: z.string().max(200),
   bank_account_number: z.string().max(40), bank_ifsc: z.string().max(11), upi_id: z.string().max(200),
 });
-const editable: Array<"Draft" | "Correction Required" | "Payment Pending" | "Submitted"> = ["Draft", "Correction Required", "Payment Pending", "Submitted"];
+const editable: Database["public"]["Enums"]["partner_application_status"][] = ["Draft", "Correction Required", "Payment Pending", "Submitted"];
 const documentType = z.enum(["rc", "insurance", "puc", "licence", "photo_front", "photo_rear", "photo_side", "photo_interior"]);
 
 export const savePartnerDraft = createServerFn({ method: "POST" })
