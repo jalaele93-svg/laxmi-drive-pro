@@ -15,6 +15,13 @@
       "when": 1791792399954,
       "tag": "0001_website_content_editor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791887115538,
+      "tag": "0002_resumable_partner_documents",
+      "breakpoints": true
     }
   ]
 }

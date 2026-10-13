@@ -269,6 +269,7 @@ export type Database = {
           file_path: string
           file_size: number | null
           id: string
+          is_current: boolean
           mime_type: string | null
           user_id: string
           verified: boolean
@@ -282,6 +283,7 @@ export type Database = {
           file_path: string
           file_size?: number | null
           id?: string
+          is_current?: boolean
           mime_type?: string | null
           user_id: string
           verified?: boolean
@@ -295,6 +297,7 @@ export type Database = {
           file_path?: string
           file_size?: number | null
           id?: string
+          is_current?: boolean
           mime_type?: string | null
           user_id?: string
           verified?: boolean
@@ -449,6 +452,18 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      replace_partner_document: {
+        Args: {
+          _application_id: string
+          _doc_type: string
+          _file_name: string
+          _file_path: string
+          _file_size: number
+          _mime_type: string
+          _user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "staff" | "partner"
