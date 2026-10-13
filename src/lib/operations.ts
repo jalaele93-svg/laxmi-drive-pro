@@ -23,7 +23,7 @@ export async function listPartners() {
   return data;
 }
 export async function listPartnerDocuments() {
-  const { data, error } = await supabase.from("partner_documents").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("partner_documents").select("*").eq("is_current", true).order("created_at", { ascending: false });
   if (error) throw error;
   return data;
 }

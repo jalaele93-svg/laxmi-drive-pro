@@ -2,8 +2,8 @@ import { useState } from "react";
 import { CheckCircle2, Loader2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { site, telHref } from "@/lib/site";
-import { LessonPayment } from "@/components/site/LessonPayment";
 import { supabase } from "@/integrations/supabase/client";
+import { LessonPayment } from "./LessonPayment";
 
 export type BookingValues = {
   fullName: string;
@@ -112,17 +112,10 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
           call you on <strong className="text-foreground">{values.mobile}</strong> to confirm your
           batch and timing.
         </p>
-        {values.paymentChoice === "UPI" && (
-          <div className="w-full max-w-lg text-left">
-            <LessonPayment />
-          </div>
-        )}
         <div className="flex flex-wrap justify-center gap-3">
-          {values.paymentChoice !== "UPI" && (
-            <Button asChild variant="outline">
-              <a href="#lesson-payment">Pay agreed fees / advance</a>
-            </Button>
-          )}
+          <Button asChild variant="outline">
+            <a href="#lesson-payment">Pay agreed fees / advance</a>
+          </Button>
           <Button asChild variant="cta">
             <a href={telHref}>
               <Phone aria-hidden="true" /> Call {site.phoneDisplay}
@@ -138,7 +131,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
             Book another lesson
           </Button>
         </div>
-
+        <div className="w-full text-left"><LessonPayment id="booking-success-payment" learnerName={values.fullName} mobile={values.mobile} /></div>
       </div>
     );
   }
@@ -267,11 +260,8 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
         </select>
       </Field>
 
-      {values.paymentChoice === "UPI" && (
-        <p className="rounded-lg bg-muted p-3 text-sm text-muted-foreground">
-          Your UPI QR code will appear after your booking request is saved. Confirm the amount with our team before paying.
-        </p>
-      )}
+      {values.paymentChoice === "UPI" && <LessonPayment id="booking-upi-payment" learnerName={values.fullName} mobile={values.mobile} />}
+      {values.paymentChoice === "Card" && <p className="text-sm text-muted-foreground">Online card payments are not configured yet. Our team will confirm available payment options.</p>}
       {submitError && <p role="alert" className="text-sm text-destructive">{submitError}</p>}
       <Button type="submit" variant="cta" size="xl" disabled={status === "sending"}>
         {status === "sending" ? (
