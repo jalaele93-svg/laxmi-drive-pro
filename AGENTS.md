@@ -18,3 +18,5 @@
 - Admin record editors are shared dialog tools and CSV downloads escape formula-like cells; this keeps editing consistent and exports safe to open in spreadsheets.
 - Initial owner access is activated only by an auth lifecycle trigger matching the designated verified email, with no client-callable role-claim function; this prevents self-assigned staff privileges.
 - Email confirmation returns to the public auth page and checks the verified user and staff role before entering admin; this prevents premature access and protected-callback redirects.
+- Partner drafts reuse a client-generated application UUID and persist only that reference locally; signed upload confirmation checks ownership and file signatures before a service-only atomic document replacement, so retries do not create a second application or reuse obsolete verified documents.
+- Current partner documents are versioned with one current row per document type; approval and staff/partner lists use current rows to prevent stale verification from approving replacement files.

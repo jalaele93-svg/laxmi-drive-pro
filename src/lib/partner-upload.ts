@@ -1,5 +1,12 @@
 import { preparePartnerUpload, confirmPartnerUpload } from "./partner-submission.functions";
 
+async function bounded<T>(operation: Promise<T>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([operation, new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("Upload confirmation timed out. Retry the same file to check whether it saved.")), 20000); })]);
+  } finally { if (timer) clearTimeout(timer); }
+}
+
 export async function uploadPartnerFile(options: {
   id: string; docType: string; file: File; version: string;
   signal: AbortSignal; progress: (percent: number) => void;
@@ -7,8 +14,8 @@ export async function uploadPartnerFile(options: {
   const { id, docType, file, version, signal, progress } = options;
   const mime = file.type;
   if (mime !== "image/jpeg" && mime !== "image/png" && mime !== "application/pdf") throw new Error("Use a JPG, PNG or PDF.");
-  const prepared = await preparePartnerUpload({ data: { id, docType: docType as "rc", version, mime, size: file.size } });
-  const confirm = () => confirmPartnerUpload({ data: { id, docType: docType as "rc", path: prepared.path, name: file.name, mime, size: file.size } });
+  const prepared = await bounded(preparePartnerUpload({ data: { id, docType: docType as "rc", version, mime, size: file.size } }));
+  const confirm = () => bounded(confirmPartnerUpload({ data: { id, docType: docType as "rc", path: prepared.path, name: file.name, mime, size: file.size } }));
   // Reconcile first: a previous upload may have finished despite a lost response.
   try { await confirm(); progress(100); return; } catch { /* Not stored yet. */ }
   if (signal.aborted) throw new Error("Upload cancelled. Retry when ready.");
