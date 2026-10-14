@@ -1,6 +1,6 @@
 # Production upgrade
 - [ ] Repair UPI placement and resumable partner uploads; verify signed-in retries and failures.
-- [ ] Integrate Razorpay orders, verification and webhooks (blocked: merchant credentials and approved learner charging rule).
+- [ ] Integrate Razorpay orders, verification and webhooks for staff-set learner amounts and ₹2,000 partner advances (blocked: secure credential form declined; no Razorpay credentials saved).
 - [x] Add customer UPI QR collection for lesson fees and agreed booking advances, with manual receipt verification.
 - [x] Implement verified-owner admin registration, confirmation resend and secure role activation.
 - [x] Upgrade admin controls: booking editing, instructor roster, filters, exports and safe sign-out.
