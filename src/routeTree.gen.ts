@@ -23,6 +23,7 @@ import { Route as FaqRouteImport } from './routes/faq'
 import { Route as InstructorsRouteImport } from './routes/instructors'
 import { Route as PartnerRouteImport } from './routes/partner'
 import { Route as PartnerTermsRouteImport } from './routes/partner-terms'
+import { Route as PayRouteImport } from './routes/pay'
 import { Route as SafetyRulesRouteImport } from './routes/safety-rules'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as AuthenticatedPartnerApplyRouteImport } from './routes/_authenticated/partner-apply'
@@ -37,6 +38,7 @@ import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminWebsiteRouteImport } from './routes/admin.website'
+import { Route as ApiPublicRazorpayWebhookRouteImport } from './routes/api/public/razorpay-webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -105,6 +107,11 @@ const PartnerRoute = PartnerRouteImport.update({
 const PartnerTermsRoute = PartnerTermsRouteImport.update({
   id: '/partner-terms',
   path: '/partner-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayRoute = PayRouteImport.update({
+  id: '/pay',
+  path: '/pay',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SafetyRulesRoute = SafetyRulesRouteImport.update({
@@ -179,6 +186,12 @@ const AdminWebsiteRoute = AdminWebsiteRouteImport.update({
   path: '/website',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicRazorpayWebhookRoute =
+  ApiPublicRazorpayWebhookRouteImport.update({
+    id: '/api/public/razorpay-webhook',
+    path: '/api/public/razorpay-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -194,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/instructors': typeof InstructorsRoute
   '/partner': typeof PartnerRoute
   '/partner-terms': typeof PartnerTermsRoute
+  '/pay': typeof PayRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/partner-apply': typeof AuthenticatedPartnerApplyRoute
@@ -208,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/website': typeof AdminWebsiteRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -222,6 +237,7 @@ export interface FileRoutesByTo {
   '/instructors': typeof InstructorsRoute
   '/partner': typeof PartnerRoute
   '/partner-terms': typeof PartnerTermsRoute
+  '/pay': typeof PayRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/partner-apply': typeof AuthenticatedPartnerApplyRoute
@@ -236,6 +252,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/website': typeof AdminWebsiteRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -253,6 +270,7 @@ export interface FileRoutesById {
   '/instructors': typeof InstructorsRoute
   '/partner': typeof PartnerRoute
   '/partner-terms': typeof PartnerTermsRoute
+  '/pay': typeof PayRoute
   '/safety-rules': typeof SafetyRulesRoute
   '/testimonials': typeof TestimonialsRoute
   '/_authenticated/partner-apply': typeof AuthenticatedPartnerApplyRoute
@@ -267,6 +285,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/website': typeof AdminWebsiteRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/razorpay-webhook': typeof ApiPublicRazorpayWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -284,6 +303,7 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/partner'
     | '/partner-terms'
+    | '/pay'
     | '/safety-rules'
     | '/testimonials'
     | '/partner-apply'
@@ -298,6 +318,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/website'
     | '/admin/'
+    | '/api/public/razorpay-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -312,6 +333,7 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/partner'
     | '/partner-terms'
+    | '/pay'
     | '/safety-rules'
     | '/testimonials'
     | '/partner-apply'
@@ -326,6 +348,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/website'
     | '/admin'
+    | '/api/public/razorpay-webhook'
   id:
     | '__root__'
     | '/'
@@ -342,6 +365,7 @@ export interface FileRouteTypes {
     | '/instructors'
     | '/partner'
     | '/partner-terms'
+    | '/pay'
     | '/safety-rules'
     | '/testimonials'
     | '/_authenticated/partner-apply'
@@ -356,6 +380,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/website'
     | '/admin/'
+    | '/api/public/razorpay-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -373,8 +398,10 @@ export interface RootRouteChildren {
   InstructorsRoute: typeof InstructorsRoute
   PartnerRoute: typeof PartnerRoute
   PartnerTermsRoute: typeof PartnerTermsRoute
+  PayRoute: typeof PayRoute
   SafetyRulesRoute: typeof SafetyRulesRoute
   TestimonialsRoute: typeof TestimonialsRoute
+  ApiPublicRazorpayWebhookRoute: typeof ApiPublicRazorpayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -477,6 +504,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartnerTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pay': {
+      id: '/pay'
+      path: '/pay'
+      fullPath: '/pay'
+      preLoaderRoute: typeof PayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/safety-rules': {
       id: '/safety-rules'
       path: '/safety-rules'
@@ -575,6 +609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminWebsiteRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/razorpay-webhook': {
+      id: '/api/public/razorpay-webhook'
+      path: '/api/public/razorpay-webhook'
+      fullPath: '/api/public/razorpay-webhook'
+      preLoaderRoute: typeof ApiPublicRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -634,8 +675,10 @@ const rootRouteChildren: RootRouteChildren = {
   InstructorsRoute: InstructorsRoute,
   PartnerRoute: PartnerRoute,
   PartnerTermsRoute: PartnerTermsRoute,
+  PayRoute: PayRoute,
   SafetyRulesRoute: SafetyRulesRoute,
   TestimonialsRoute: TestimonialsRoute,
+  ApiPublicRazorpayWebhookRoute: ApiPublicRazorpayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
