@@ -60,6 +60,7 @@ export type Database = {
           email: string
           experience: string
           full_name: string
+          gateway_only: boolean
           id: string
           instructor: string | null
           message: string | null
@@ -79,6 +80,7 @@ export type Database = {
           email: string
           experience: string
           full_name: string
+          gateway_only?: boolean
           id?: string
           instructor?: string | null
           message?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           email?: string
           experience?: string
           full_name?: string
+          gateway_only?: boolean
           id?: string
           instructor?: string | null
           message?: string | null
@@ -130,6 +133,7 @@ export type Database = {
           email: string
           fuel_type: string
           full_name: string
+          gateway_only: boolean
           id: string
           manufacturing_year: number
           mobile: string
@@ -178,6 +182,7 @@ export type Database = {
           email: string
           fuel_type: string
           full_name: string
+          gateway_only?: boolean
           id?: string
           manufacturing_year: number
           mobile: string
@@ -226,6 +231,7 @@ export type Database = {
           email?: string
           fuel_type?: string
           full_name?: string
+          gateway_only?: boolean
           id?: string
           manufacturing_year?: number
           mobile?: string
@@ -309,6 +315,63 @@ export type Database = {
             columns: ["application_id"]
             isOneToOne: false
             referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_requests: {
+        Row: {
+          amount_paise: number
+          application_id: string | null
+          booking_id: string | null
+          created_at: string
+          currency: string
+          id: string
+          key_id: string
+          order_id: string | null
+          payment_id: string | null
+          state: string
+          token_hash: string | null
+        }
+        Insert: {
+          amount_paise: number
+          application_id?: string | null
+          booking_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          key_id: string
+          order_id?: string | null
+          payment_id?: string | null
+          state?: string
+          token_hash?: string | null
+        }
+        Update: {
+          amount_paise?: number
+          application_id?: string | null
+          booking_id?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          key_id?: string
+          order_id?: string | null
+          payment_id?: string | null
+          state?: string
+          token_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_requests_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_requests_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_bookings"
             referencedColumns: ["id"]
           },
         ]
@@ -463,6 +526,15 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      settle_razorpay_payment: {
+        Args: {
+          _amount: number
+          _order: string
+          _payment: string
+          _refunded?: boolean
+        }
+        Returns: undefined
       }
     }
     Enums: {
