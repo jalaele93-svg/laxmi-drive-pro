@@ -13,8 +13,9 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
     const keyId =
       process.env["VITE_RAZORPAY_KEY_ID"] ||
       process.env["RAZORPAY_KEY_ID"] ||
-      "rzp_test_TdVXL0e3vXa5VQ";
-    const keySecret = process.env["RAZORPAY_KEY_SECRET"] || "eRlWmFo3l5oCj6r1hGre6cEu";
+      "rzp_live_TpSwVtia3cgkgu";
+    const keySecret =
+      process.env["RAZORPAY_KEY_SECRET"] || "mLz2FiRu4ANedydi7NWBKY9B";
 
     if (!keyId || !keySecret) {
       throw new Error("Razorpay credentials are not configured on the server.");

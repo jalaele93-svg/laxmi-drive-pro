@@ -1,12 +1,14 @@
 /**
  * Razorpay Payment Gateway Integration
- * Key ID: rzp_test_TnmKLDYEjFQAYF
+ * Key ID: rzp_live_TpSwVtia3cgkgu
  */
 
 import { createRazorpayOrder } from "./razorpay.server";
 
 export const RAZORPAY_KEY_ID =
-  (import.meta.env.VITE_RAZORPAY_KEY_ID as string) || "rzp_test_TdVXL0e3vXa5VQ";
+  (import.meta.env.VITE_RAZORPAY_KEY_ID as string) || "rzp_live_TpSwVtia3cgkgu";
+
+export const DEFAULT_RAZORPAY_PHONE = "9861704224";
 
 export interface RazorpaySuccessResponse {
   razorpay_payment_id: string;
@@ -115,13 +117,14 @@ export async function openRazorpayCheckout({
     image: "/favicon.png",
     prefill: {
       name: learnerName || undefined,
-      contact: mobile ? mobile.replace(/\D/g, "").slice(-10) : undefined,
+      contact: (mobile ? mobile.replace(/\D/g, "").slice(-10) : "") || DEFAULT_RAZORPAY_PHONE,
       email: email || "customer@laxmidriving.com",
     },
     notes: {
       purpose,
       learner_name: learnerName,
-      mobile,
+      mobile: (mobile ? mobile.replace(/\D/g, "").slice(-10) : "") || DEFAULT_RAZORPAY_PHONE,
+      contact_phone: DEFAULT_RAZORPAY_PHONE,
       ...notes,
     },
     theme: {
