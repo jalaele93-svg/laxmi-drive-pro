@@ -9,14 +9,13 @@
 
 export const DEPOSIT_AMOUNT = 2000;
 
-/** [EDIT] Where partners send the ₹2,000 advance. */
+/** Razorpay enrollment deposit configuration */
 export const partnerPayment = {
-  upiId: "[EDIT: your-upi-id@bank]",
-  upiName: "Laxmi Driving Training",
-  bankAccountName: "[EDIT: account holder name]",
-  bankName: "[EDIT: bank name]",
-  accountNumber: "[EDIT: account number]",
-  ifsc: "[EDIT: IFSC code]",
+  gateway: "Razorpay",
+  keyId: "rzp_test_TnmKLDYEjFQAYF",
+  companyName: "Laxmi Driving Training",
+  depositAmount: DEPOSIT_AMOUNT,
+  currency: "INR",
 };
 
 export const partnerAreas = ["Berhampur, Odisha", "Rayagada, Odisha"];
@@ -80,12 +79,36 @@ export const partnerEligibility = [
 ];
 
 export const partnerProcess = [
-  { step: 1, title: "Apply Online", body: "Fill the partner form with your details and vehicle details." },
-  { step: 2, title: "Pay ₹2,000 Advance", body: "Pay the enrollment advance by UPI or bank transfer and share the reference." },
-  { step: 3, title: "Submit Documents", body: "Upload RC, insurance, PUC, licence and vehicle photographs." },
-  { step: 4, title: "Vehicle Verification", body: "Our team checks your documents and may inspect the vehicle." },
-  { step: 5, title: "Application Approval", body: "If everything is in order, your application is approved." },
-  { step: 6, title: "Start Partner Activities", body: "Your vehicle can be used for approved training activities." },
+  {
+    step: 1,
+    title: "Apply Online",
+    body: "Fill the partner form with your details and vehicle details.",
+  },
+  {
+    step: 2,
+    title: "Pay ₹2,000 Advance",
+    body: "Pay the enrollment advance securely online via Razorpay (UPI, Cards, NetBanking).",
+  },
+  {
+    step: 3,
+    title: "Submit Documents",
+    body: "Upload RC, insurance, PUC, licence and vehicle photographs.",
+  },
+  {
+    step: 4,
+    title: "Vehicle Verification",
+    body: "Our team checks your documents and may inspect the vehicle.",
+  },
+  {
+    step: 5,
+    title: "Application Approval",
+    body: "If everything is in order, your application is approved.",
+  },
+  {
+    step: 6,
+    title: "Start Partner Activities",
+    body: "Your vehicle can be used for approved training activities.",
+  },
 ];
 
 type PartnerCard = {

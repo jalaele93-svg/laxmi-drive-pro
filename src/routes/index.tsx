@@ -16,7 +16,7 @@ import { SectionHeading } from "@/components/site/Section";
 import { CourseCard } from "@/components/site/CourseCard";
 import { CtaBand } from "@/components/site/CtaBand";
 import { VehicleTrainingSlider } from "@/components/site/VehicleTrainingSlider";
-import heroCar from "@/assets/hero-car.jpg";
+import { HeroImageSlider } from "@/components/site/HeroImageSlider";
 import scooterImg from "@/assets/scooter-training.jpg";
 import { site, telHref, trustStats, whatsappHref } from "@/lib/site";
 
@@ -67,8 +67,8 @@ function Home() {
               Learn Driving the <span className="text-gradient-brand">Safe & Simple</span> Way
             </h1>
             <p className="max-w-xl text-base leading-relaxed text-primary-foreground/85 sm:text-lg">
-              At {site.name} we teach in easy steps and simple language. No shouting, no hurry — just
-              calm practice until you drive with full confidence.
+              At {site.name} we teach in easy steps and simple language. No shouting, no hurry —
+              just calm practice until you drive with full confidence.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -100,24 +100,7 @@ function Home() {
           </div>
 
           <div className="animate-fade-up relative">
-            <img
-              src={heroCar}
-              alt="Young Indian learner driver at the wheel of a white training car with a red L plate, instructor guiding from the passenger seat"
-              width={1600}
-              height={1104}
-              className="w-full rounded-3xl shadow-[var(--shadow-lift)]"
-            />
-            <div className="card-surface absolute -bottom-6 left-4 flex items-center gap-3 p-4 sm:left-8">
-              <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
-                <ShieldCheck className="size-5" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="font-display text-sm font-bold text-foreground">
-                  Dual-Control Training Car
-                </p>
-                <p className="text-xs text-muted-foreground">Safe practice from your first class</p>
-              </div>
-            </div>
+            <HeroImageSlider />
           </div>
         </div>
       </section>
@@ -219,14 +202,16 @@ function Home() {
               description="A favourite choice for students, homemakers and working women. We start with balance, then slowly move to main roads. A lady instructor can be arranged on request."
             />
             <ul className="grid gap-2 text-sm">
-              {["Very slow, very patient teaching", "Helmet and safety gear guidance", "Practice on quiet roads first"].map(
-                (t) => (
-                  <li key={t} className="flex items-center gap-2">
-                    <Star className="size-4 text-accent" aria-hidden="true" />
-                    {t}
-                  </li>
-                ),
-              )}
+              {[
+                "Very slow, very patient teaching",
+                "Helmet and safety gear guidance",
+                "Practice on quiet roads first",
+              ].map((t) => (
+                <li key={t} className="flex items-center gap-2">
+                  <Star className="size-4 text-accent" aria-hidden="true" />
+                  {t}
+                </li>
+              ))}
             </ul>
             <Button asChild variant="cta" size="lg">
               <Link to="/bike-training">Learn about bike & scooter training</Link>
@@ -254,7 +239,9 @@ function Home() {
                 <p className="mt-4 text-sm leading-relaxed text-muted-foreground">“{t.quote}”</p>
                 <footer className="mt-4 text-sm font-semibold text-foreground">
                   {t.name}
-                  <span className="block text-xs font-normal text-muted-foreground">{t.course}</span>
+                  <span className="block text-xs font-normal text-muted-foreground">
+                    {t.course}
+                  </span>
                 </footer>
               </blockquote>
             ))}

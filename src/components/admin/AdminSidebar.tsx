@@ -66,7 +66,9 @@ export function AdminSidebar() {
                   <SidebarMenuButton
                     asChild
                     tooltip={item.title}
-                    isActive={item.url === "/admin" ? pathname === "/admin" : pathname.startsWith(item.url)}
+                    isActive={
+                      item.url === "/admin" ? pathname === "/admin" : pathname.startsWith(item.url)
+                    }
                   >
                     <Link to={item.url} className="flex items-center gap-2">
                       <item.icon className="size-4" />

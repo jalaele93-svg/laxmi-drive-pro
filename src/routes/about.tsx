@@ -56,8 +56,8 @@ function About() {
             />
             <p className="text-sm leading-relaxed text-muted-foreground">
               We train students on our own vehicles. Our car has dual controls so the instructor can
-              brake if needed, and our bikes and scooters are light and easy to handle for first-time
-              riders. Every course also includes traffic rules and road safety classes.
+              brake if needed, and our bikes and scooters are light and easy to handle for
+              first-time riders. Every course also includes traffic rules and road safety classes.
             </p>
           </div>
         </div>
@@ -68,10 +68,26 @@ function About() {
           <SectionHeading eyebrow="What we stand for" title="Our promise to every student" />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { Icon: Heart, title: "Patience", body: "No shouting, no hurry. We repeat until you are comfortable." },
-              { Icon: ShieldCheck, title: "Safety", body: "Safe habits from the first class — belts, helmets, mirrors, signals." },
-              { Icon: Target, title: "Clear Steps", body: "A simple plan for each class, so you always know what comes next." },
-              { Icon: Users, title: "Respect", body: "Comfortable batches for students, ladies, seniors and working people." },
+              {
+                Icon: Heart,
+                title: "Patience",
+                body: "No shouting, no hurry. We repeat until you are comfortable.",
+              },
+              {
+                Icon: ShieldCheck,
+                title: "Safety",
+                body: "Safe habits from the first class — belts, helmets, mirrors, signals.",
+              },
+              {
+                Icon: Target,
+                title: "Clear Steps",
+                body: "A simple plan for each class, so you always know what comes next.",
+              },
+              {
+                Icon: Users,
+                title: "Respect",
+                body: "Comfortable batches for students, ladies, seniors and working people.",
+              },
             ].map(({ Icon, title, body }) => (
               <article key={title} className="card-surface h-full p-6">
                 <span className="grid size-12 place-items-center rounded-xl bg-primary-soft text-primary">

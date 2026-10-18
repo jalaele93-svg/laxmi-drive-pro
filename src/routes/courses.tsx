@@ -5,7 +5,6 @@ import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CourseCard } from "@/components/site/CourseCard";
 import { CtaBand } from "@/components/site/CtaBand";
 
-
 export const Route = createFileRoute("/courses")({
   loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
@@ -49,18 +48,20 @@ function Courses() {
 
       <section className="section-y">
         <div className="container-page space-y-14">
-          {groups.filter((g) => courses.some((c) => c.vehicle === g.key)).map((g) => (
-            <div key={g.key} className="space-y-8">
-              <SectionHeading align="left" eyebrow={g.key} title={g.title} as="h2" />
-              <div className="grid gap-6 md:grid-cols-2">
-                {courses
-                  .filter((c) => c.vehicle === g.key)
-                  .map((c) => (
-                    <CourseCard key={c.id} course={c} />
-                  ))}
+          {groups
+            .filter((g) => courses.some((c) => c.vehicle === g.key))
+            .map((g) => (
+              <div key={g.key} className="space-y-8">
+                <SectionHeading align="left" eyebrow={g.key} title={g.title} as="h2" />
+                <div className="grid gap-6 md:grid-cols-2">
+                  {courses
+                    .filter((c) => c.vehicle === g.key)
+                    .map((c) => (
+                      <CourseCard key={c.id} course={c} />
+                    ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
           <aside className="card-surface flex gap-4 bg-accent-soft p-6">
             <Info className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden="true" />
@@ -75,7 +76,10 @@ function Courses() {
         </div>
       </section>
 
-      <CtaBand title="Not sure which course suits you?" description="Call us or send a WhatsApp message. We will suggest the right course in two minutes." />
+      <CtaBand
+        title="Not sure which course suits you?"
+        description="Call us or send a WhatsApp message. We will suggest the right course in two minutes."
+      />
     </>
   );
 }

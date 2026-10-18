@@ -121,10 +121,22 @@ export function VehicleTrainingSlider() {
           ))}
         </div>
         <div className="hidden shrink-0 gap-2 sm:flex">
-          <Button type="button" size="icon" variant="outline" onClick={() => move(-1)} aria-label="Previous vehicle">
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            onClick={() => move(-1)}
+            aria-label="Previous vehicle"
+          >
             <ChevronLeft aria-hidden="true" />
           </Button>
-          <Button type="button" size="icon" variant="outline" onClick={() => move(1)} aria-label="Next vehicle">
+          <Button
+            type="button"
+            size="icon"
+            variant="outline"
+            onClick={() => move(1)}
+            aria-label="Next vehicle"
+          >
             <ChevronRight aria-hidden="true" />
           </Button>
         </div>
@@ -138,59 +150,104 @@ export function VehicleTrainingSlider() {
         onTouchEnd={handleTouchEnd}
         aria-live="polite"
       >
-        {slides.map((slide, index) => (
-          <article
-            key={slide.title}
-            id={`vehicle-slide-${index}`}
-            role="tabpanel"
-            aria-hidden={active !== index}
-            className={`absolute inset-0 transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none ${
-              active === index ? "z-10 scale-100 opacity-100" : "pointer-events-none scale-[1.03] opacity-0"
-            }`}
-          >
-            <img
-              src={slide.image}
-              alt={slide.alt}
-              loading="lazy"
-              width={1600}
-              height={912}
-              className="size-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-primary-dark/35 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 p-6 text-primary-foreground sm:p-8 lg:p-10">
-              <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold sm:text-sm">
-                <span className="rounded-full border border-primary-foreground/30 bg-primary-dark/45 px-3 py-1 backdrop-blur-sm">
-                  {slide.category}
-                </span>
-                <span className="flex items-center gap-1.5 text-primary-foreground/80">
-                  <Clock3 className="size-4" aria-hidden="true" /> {slide.duration}
-                </span>
-              </div>
-              <h3 className="font-display max-w-2xl text-3xl font-extrabold sm:text-4xl lg:text-5xl">
-                {slide.title}
-              </h3>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-primary-foreground/85 sm:text-base">
-                {slide.description}
-              </p>
-              <Button asChild variant="cta" size="lg" className="mt-5">
-                <Link to={slide.to}>
-                  View Training <ArrowRight aria-hidden="true" />
-                </Link>
-              </Button>
-            </div>
-          </article>
-        ))}
-
-        <div className="pointer-events-none absolute inset-x-6 top-5 z-20 flex gap-2 sm:inset-x-auto sm:right-6 sm:left-1/2" aria-hidden="true">
+        <div
+          className="flex h-full w-full transition-transform duration-700 ease-in-out motion-reduce:transition-none"
+          style={{ transform: `translateX(-${active * 100}%)` }}
+        >
           {slides.map((slide, index) => (
-            <span
-              key={slide.label}
-              className="h-1 flex-1 overflow-hidden rounded-full bg-primary-foreground/30 sm:w-12"
+            <article
+              key={slide.title}
+              id={`vehicle-slide-${index}`}
+              role="tabpanel"
+              aria-hidden={active !== index}
+              className="relative h-full w-full shrink-0 grow-0 basis-full overflow-hidden"
             >
-              {active === index && <span key={active} className="vehicle-slider-progress block h-full bg-accent" />}
-            </span>
+              <img
+                src={slide.image}
+                alt={slide.alt}
+                loading={index === 0 ? "eager" : "lazy"}
+                width={1600}
+                height={912}
+                className="size-full object-cover transition-transform duration-700 hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-primary-dark/40 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-6 text-primary-foreground sm:p-8 lg:p-10">
+                <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold sm:text-sm">
+                  <span className="rounded-full border border-primary-foreground/30 bg-primary-dark/50 px-3 py-1 backdrop-blur-sm">
+                    {slide.category}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-primary-foreground/80">
+                    <Clock3 className="size-4" aria-hidden="true" /> {slide.duration}
+                  </span>
+                </div>
+                <h3 className="font-display max-w-2xl text-3xl font-extrabold sm:text-4xl lg:text-5xl">
+                  {slide.title}
+                </h3>
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-primary-foreground/85 sm:text-base">
+                  {slide.description}
+                </p>
+                <Button asChild variant="cta" size="lg" className="mt-5">
+                  <Link to={slide.to}>
+                    View Training <ArrowRight aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
+            </article>
           ))}
         </div>
+
+        <div
+          className="pointer-events-none absolute inset-x-6 top-5 z-20 flex gap-2 sm:inset-x-auto sm:right-6 sm:left-1/2"
+          aria-hidden="true"
+        >
+          {slides.map((slide, index) => (
+            <button
+              key={slide.label}
+              type="button"
+              onClick={() => setActive(index)}
+              className="pointer-events-auto h-1.5 flex-1 overflow-hidden rounded-full bg-primary-foreground/30 transition-all hover:bg-primary-foreground/60 sm:w-12"
+              aria-label={`Go to ${slide.label}`}
+            >
+              {active === index && (
+                <span key={active} className="vehicle-slider-progress block h-full bg-accent" />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Horizontal scrollable vehicle thumbnail cards */}
+      <div className="mt-4 flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x sm:grid sm:grid-cols-4 sm:overflow-visible">
+        {slides.map((slide, index) => (
+          <button
+            key={slide.label}
+            type="button"
+            onClick={() => setActive(index)}
+            className={`group relative flex min-w-[200px] sm:min-w-0 flex-1 snap-start items-center gap-3 rounded-xl border p-2.5 text-left transition-all ${
+              active === index
+                ? "border-primary bg-primary/10 shadow-sm ring-2 ring-primary/30"
+                : "border-border bg-card/60 hover:border-primary/40 hover:bg-card"
+            }`}
+          >
+            <div className="relative size-12 shrink-0 overflow-hidden rounded-lg">
+              <img
+                src={slide.image}
+                alt={slide.label}
+                className="size-full object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p
+                className={`text-xs font-bold leading-tight truncate ${
+                  active === index ? "text-primary" : "text-foreground"
+                }`}
+              >
+                {slide.title}
+              </p>
+              <p className="text-[11px] text-muted-foreground truncate">{slide.duration}</p>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );

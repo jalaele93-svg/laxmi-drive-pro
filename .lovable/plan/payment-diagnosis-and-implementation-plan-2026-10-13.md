@@ -1,11 +1,13 @@
 # Payment diagnosis and implementation plan
 
 ## Scope
+
 Repair customer and partner payment journeys while preserving the current design, records, staff access and **existing Lovable Cloud backend**. No second database or backend will be enabled. This is inspection and planning only: no source, database, storage or payment settings were changed.
 
 ## Concrete inspection findings
 
 ### 1. Customer UPI selection is a preference, not a payment action — confirmed
+
 - `src/components/site/BookingForm.tsx:49–56, 76–94, 253–260`: selecting UPI only changes `paymentChoice`; submission inserts a lesson enquiry. Neither action opens a payment app or checkout.
 - `src/routes/book.tsx:63–70`: `LessonPayment` is separate from the booking form in the adjacent column. The components do not share booking identity, amount or payment state.
 - `src/components/site/LessonPayment.tsx:7–18, 55–63`: the supplied recipient and QR exist. A `upi://pay` link is rendered **only after entering a positive confirmed amount**. The QR itself is static and not linked to a booking or payment confirmation service.
@@ -16,6 +18,7 @@ Repair customer and partner payment journeys while preserving the current design
 **Diagnosis:** disconnected controls and payment placement, not a failed payment gateway. No fixed learner advance or exact payable course amount can safely be inferred from the published price ranges.
 
 ### 2. Partner “upload completed” indication does not mean upload completed — confirmed
+
 - `src/routes/_authenticated/partner-apply.tsx:164–175, 324–335`: selecting a file only stores a browser `File` in state. The tick beside its name is shown immediately; nothing has been uploaded yet.
 - `:177–249`: final submission creates an application, then uploads each document and inserts each document row **sequentially**. Up to eight files, each up to 10 MB, share one loading spinner. There is no per-file progress, app-controlled operation deadline, cancellation or resumable submission.
 - `:245–250` has `catch` and `finally`, so the spinner should clear when requests settle. It can remain active while a request stays pending. Slow uploads are a credible cause, but the exact failing request behind the reported endless spinner is **not yet proven**.
@@ -27,6 +30,7 @@ Repair customer and partner payment journeys while preserving the current design
 **Diagnosis:** the current page can look finished uploading before uploading starts; final submission conflates saving and uploading. There is no gateway loading state in this source. Reproduce the reported hang with a partner session and capture the specific stalled request before attributing it to storage, authentication or payment.
 
 ### 3. Existing backend and storage — checked live
+
 - Lovable Cloud is active. The eight public application tables all have RLS enabled; no dedicated gateway payment/order/event table exists. Existing booking/application columns contain no Razorpay order or payment identifiers.
 - Lesson enquiries permit public inserts but staff-only reads/updates through policies. Partner applications/documents use owner and staff policies. Effective table privileges exist for the relevant roles; this is **not a missing-GRANT diagnosis**. Some table privileges are broader than the policies, but RLS still governs access.
 - `partner-documents` is private, with a 10,485,760-byte per-file limit. Owner-folder upload/read/delete policies and staff read policies exist. **The bucket MIME allowlist is currently unset**; file format checks are only performed by the page before upload.
@@ -39,6 +43,7 @@ Repair customer and partner payment journeys while preserving the current design
 ## Proposed fixes
 
 ### Phase 1 — Correct the current journeys without waiting for a gateway
+
 1. **Customer booking:** retain “payment preference”, but make selecting UPI reveal a clearly reachable payment section beside/below the choice. Keep the existing QR, recipient and confirmed-amount input; include the same payment section after successful booking. Opening UPI must be an explicit tap, never an automatic redirect during saving. Keep Cash / pay-after-confirmation available and show no paid state from a scan or app launch.
 2. **Partner submission:** save one owned draft/application identifier and reuse it across retries. Upload during the document step, and distinguish “selected”, “uploading”, “saved” and “failed” per file. Use bounded concurrency, e.g. two uploads at a time, real cancellation where supported, operation deadlines and retry only failed files. A timeout must first reconcile whether a write completed; it must not blindly repeat a write.
 3. Persist upload metadata only after storage confirms success. Reconcile orphan files/metadata after uncertain responses. Resume the same application after reload; do not persist bank details or private documents in browser storage. Add explicit document version/replacement handling that invalidates the relevant verification and cannot let an obsolete verified copy satisfy approval.
@@ -47,9 +52,11 @@ Repair customer and partner payment journeys while preserving the current design
 6. Do not reuse the learner UPI recipient for the partner deposit without owner authorization. Until Razorpay is ready or verified partner instructions are supplied, show an honest “Payment not configured” state rather than a payment spinner.
 
 ### Phase 2 — Shared secure Razorpay payment service
+
 **Recommendation:** Razorpay Standard Checkout for both journeys. Use UPI Intent / QR through checkout, with cards and netbanking where enabled. Do not build a new UPI Collect/VPA-entry flow; Razorpay documents its deprecation for most users from 28 February 2026. [1](https://razorpay.com/docs/developer-tools/integrations/standard-checkout/) [5](https://razorpay.com/docs/payments/payment-methods/upi/)
 
 #### Technical design
+
 - Add `src/lib/payments.functions.ts` for typed app calls and server-only helpers for REST requests, validation and signatures. Use TanStack server functions, not a new backend or Edge Functions. Access secrets inside handlers; use fetch and Web Crypto-compatible HMAC verification.
 - Add additive migrations to the **same** database for `payment_attempts` and `payment_webhook_events`. Attempts link to exactly one existing lesson booking or partner application, with purpose, INR amount in paise, quote/version, provider order/payment IDs, pending/captured/failed/refunded state, timestamps and local idempotency key. Unique provider IDs/event IDs prevent duplicate application of payments. Grants must precede RLS/policies for every new public table.
 - Partner operations verify the signed-in owner through existing middleware and RLS. Public learner booking creation returns a minimal booking reference plus a high-entropy, narrowly scoped payment capability; store only its hash server-side. Require it for order/status calls, expire/rotate it, rate-limit and apply anti-abuse checks. A booking UUID or customer-supplied email alone must not authorize payment access or reveal learner details. Do not expose anonymous SELECT access to bookings.
@@ -63,6 +70,7 @@ Repair customer and partner payment journeys while preserving the current design
 - Provide bounded status checks and a reconciliation path when callback/webhook delivery is delayed. Logs exclude secrets, bank account numbers and raw sensitive payloads. Existing stored partner bank information should remain private; gateway collection does not require collecting new card or bank credentials.
 
 ## Owner actions / credentials required
+
 1. Create or activate a Razorpay merchant account; complete business/KYC and settlement-bank verification, and confirm partner enrollment collection is permitted for your account.
 2. When integration is approved, add `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in **Project Settings → Secrets**, first for Test mode. Never paste the secret in chat or code. The key ID may be returned to checkout; the key secret must remain server-only.
 3. After the webhook endpoint is implemented and you approve publishing it, configure its public HTTPS URL in Razorpay. Set one strong webhook secret there and the same `RAZORPAY_WEBHOOK_SECRET` in Project Settings → Secrets. Configure captured/paid, failure and refund events, plus an alert email. No endpoint has been deployed during this inspection.
@@ -71,6 +79,7 @@ Repair customer and partner payment journeys while preserving the current design
 6. If keeping manual partner payments as a fallback, supply/authorize the actual partner recipient separately. No additional Lovable Cloud database credentials are needed.
 
 ## Verification before release
+
 - Reproduce the actual partner hang while signed in as the affected account; identify the precise stalled request, response and application/file state. Use test records only with permission.
 - Customer: UPI reveal, desktop QR, Android/iOS app return, missing payment app, invalid amount, quote not ready, repeat submit and reload. Confirm one booking and the same authorized payment target.
 - Partner: six required files, optional files, 10 MB boundary, disallowed formats, slow/interrupted upload, expired session, partial metadata failure, replacement and retry/reload. Confirm one resumable application and private files belonging to it.

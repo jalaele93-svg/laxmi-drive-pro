@@ -12,7 +12,9 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/admin")({
   ssr: false,
   beforeLoad: async ({ location }) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw redirect({ to: "/auth", search: { redirect: location.href } });
     const { data: allowed, error } = await supabase.rpc("is_staff", { _user_id: user.id });
     if (error || !allowed) throw redirect({ to: "/" });
@@ -45,7 +47,10 @@ function AdminLayout() {
     await queryClient.cancelQueries();
     queryClient.clear();
     const { error } = await supabase.auth.signOut();
-    if (error) { toast.error("Could not sign out. Please try again."); return; }
+    if (error) {
+      toast.error("Could not sign out. Please try again.");
+      return;
+    }
     await navigate({ to: "/auth", search: { redirect: "/admin" }, replace: true });
   }
   return (
@@ -58,8 +63,21 @@ function AdminLayout() {
             <span className="font-display text-sm font-bold tracking-tight">
               Laxmi Driving Training — Admin
             </span>
-            <Badge variant="outline" className="ml-auto border-transparent bg-accent/15 text-accent-foreground">Staff</Badge>
-            <Button variant="ghost" size="icon" aria-label="Sign out" title="Sign out" onClick={signOut}><LogOut className="size-4" /></Button>
+            <Badge
+              variant="outline"
+              className="ml-auto border-transparent bg-accent/15 text-accent-foreground"
+            >
+              Staff
+            </Badge>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Sign out"
+              title="Sign out"
+              onClick={signOut}
+            >
+              <LogOut className="size-4" />
+            </Button>
           </header>
           <main className="min-w-0 flex-1 p-4 sm:p-6">
             <div className="mx-auto flex max-w-6xl flex-col gap-6">

@@ -47,6 +47,46 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const url = new URL(request.url);
+
+      if (url.pathname === "/api/send-booking-confirmation" && request.method === "POST") {
+        try {
+          const body = await request.json();
+          const { sendBookingConfirmationEmailDirect } = await import("./lib/booking-email.server");
+          const res = await sendBookingConfirmationEmailDirect(body);
+          return new Response(JSON.stringify(res), {
+            status: res.success ? 200 : 400,
+            headers: { "content-type": "application/json" },
+          });
+        } catch (err: unknown) {
+          console.error("[API send-booking-confirmation Error]", err);
+          const msg = err instanceof Error ? err.message : "Failed to process booking confirmation email";
+          return new Response(JSON.stringify({ success: false, error: msg }), {
+            status: 500,
+            headers: { "content-type": "application/json" },
+          });
+        }
+      }
+
+      if (url.pathname === "/api/send-booking-status" && request.method === "POST") {
+        try {
+          const body = await request.json();
+          const { sendBookingStatusEmailDirect } = await import("./lib/booking-email.server");
+          const res = await sendBookingStatusEmailDirect(body);
+          return new Response(JSON.stringify(res), {
+            status: res.success ? 200 : 400,
+            headers: { "content-type": "application/json" },
+          });
+        } catch (err: unknown) {
+          console.error("[API send-booking-status Error]", err);
+          const msg = err instanceof Error ? err.message : "Failed to process status email";
+          return new Response(JSON.stringify({ success: false, error: msg }), {
+            status: 500,
+            headers: { "content-type": "application/json" },
+          });
+        }
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

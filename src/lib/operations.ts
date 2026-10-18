@@ -8,7 +8,11 @@ export type PartnerDocument = Database["public"]["Tables"]["partner_documents"][
 export type Settings = Database["public"]["Tables"]["site_settings"]["Row"];
 
 export async function listBookings() {
-  const { data, error } = await supabase.from("lesson_bookings").select("*").order("created_at", { ascending: false }).limit(500);
+  const { data, error } = await supabase
+    .from("lesson_bookings")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(500);
   if (error) throw error;
   return data;
 }
@@ -18,14 +22,22 @@ export async function listInstructors() {
   return data;
 }
 export async function listPartners() {
-  const { data, error } = await supabase.from("partner_applications").select("*").order("created_at", { ascending: false }).limit(500);
+  const { data, error } = await supabase
+    .from("partner_applications")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(500);
   if (error) throw error;
   return data;
 }
 export async function listPartnerDocuments() {
-  const { data, error } = await supabase.from("partner_documents").select("*").eq("is_current", true).order("created_at", { ascending: false });
+  const { data, error } = await supabase
+    .from("partner_documents")
+    .select("*")
+    .eq("is_current", true)
+    .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
 }
 export const rupees = (value: number) => `₹${value.toLocaleString("en-IN")}`;
-export const friendlyError = (e: unknown) => e instanceof Error ? e.message : "Please try again.";
+export const friendlyError = (e: unknown) => (e instanceof Error ? e.message : "Please try again.");

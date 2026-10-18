@@ -37,10 +37,22 @@ function CarTraining() {
   const { courses } = useWebsiteContent();
   const carCourses = courses.filter((c) => c.vehicle === "Car");
   const steps = [
-    { title: "Class 1–5: The basics", body: "Seat and mirror setting, clutch, brake, accelerator and slow straight driving." },
-    { title: "Class 6–12: Control", body: "Gear changing, smooth turning, reverse, hill start and cone practice." },
-    { title: "Class 13–18: Real roads", body: "Local roads, traffic signals, lane discipline and safe overtaking." },
-    { title: "Class 19–21: Confidence", body: "Parking, busy market roads, highway feel and a final check drive." },
+    {
+      title: "Class 1–5: The basics",
+      body: "Seat and mirror setting, clutch, brake, accelerator and slow straight driving.",
+    },
+    {
+      title: "Class 6–12: Control",
+      body: "Gear changing, smooth turning, reverse, hill start and cone practice.",
+    },
+    {
+      title: "Class 13–18: Real roads",
+      body: "Local roads, traffic signals, lane discipline and safe overtaking.",
+    },
+    {
+      title: "Class 19–21: Confidence",
+      body: "Parking, busy market roads, highway feel and a final check drive.",
+    },
   ];
 
   return (
@@ -100,7 +112,11 @@ function CarTraining() {
 
       <section className="bg-muted/60 section-y">
         <div className="container-page space-y-10">
-          <SectionHeading eyebrow="Class plan" title="How your car course moves ahead" description="A simple, step-by-step plan so you always know what you will practise next." />
+          <SectionHeading
+            eyebrow="Class plan"
+            title="How your car course moves ahead"
+            description="A simple, step-by-step plan so you always know what you will practise next."
+          />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((s, i) => (
               <article key={s.title} className="card-surface h-full p-6">

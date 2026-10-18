@@ -46,11 +46,13 @@ export function CourseCard({ course }: { course: Course }) {
       </ul>
 
       <Button asChild variant="cta" className="mt-auto w-full">
-        <Link to="/book" search={{ vehicle: course.vehicle === "Motorcycle" ? "Bike" : course.vehicle }}>
+        <Link
+          to="/book"
+          search={{ vehicle: course.vehicle === "Motorcycle" ? "Bike" : course.vehicle }}
+        >
           Book This Course
         </Link>
       </Button>
-
     </article>
   );
 }

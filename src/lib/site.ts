@@ -54,9 +54,7 @@ export const site = {
   ],
 
   /** Opening hours */
-  hours: [
-    { days: "Monday – Sunday", time: "7:00 AM – 7:00 PM" },
-  ],
+  hours: [{ days: "Monday – Sunday", time: "7:00 AM – 7:00 PM" }],
 
   /**
    * [EDIT] Google Maps embed URL.
@@ -388,7 +386,7 @@ export const faqs = [
   },
   {
     q: "How do I pay the fees?",
-    a: "You can pay by cash, UPI or bank transfer at our office. Fees for each course are shown on the Courses & Pricing page.",
+    a: "You can pay securely online via Razorpay (UPI, Debit/Credit Card, NetBanking) directly on our website, or pay by cash at our office. Fees for each course are shown on the Courses & Pricing page.",
   },
 ];
 

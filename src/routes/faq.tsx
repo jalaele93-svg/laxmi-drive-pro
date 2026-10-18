@@ -9,7 +9,6 @@ import {
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CtaBand } from "@/components/site/CtaBand";
 
-
 export const Route = createFileRoute("/faq")({
   loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: ({ loaderData }) => ({
@@ -76,7 +75,10 @@ function Faq() {
         </div>
       </section>
 
-      <CtaBand title="Still have a question?" description="Call us or message on WhatsApp — we reply quickly during working hours." />
+      <CtaBand
+        title="Still have a question?"
+        description="Call us or message on WhatsApp — we reply quickly during working hours."
+      />
     </>
   );
 }

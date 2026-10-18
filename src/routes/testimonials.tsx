@@ -4,7 +4,6 @@ import { Quote, Star } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CtaBand } from "@/components/site/CtaBand";
 
-
 export const Route = createFileRoute("/testimonials")({
   loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
@@ -47,14 +46,19 @@ function Testimonials() {
               <blockquote key={t.id} className="card-surface animate-fade-up h-full p-6">
                 <Quote className="size-7 text-accent" aria-hidden="true" />
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">“{t.quote}”</p>
-                <div className="mt-4 flex gap-1 text-accent" aria-label={`${t.rating} out of 5 stars`}>
+                <div
+                  className="mt-4 flex gap-1 text-accent"
+                  aria-label={`${t.rating} out of 5 stars`}
+                >
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <Star key={i} className="size-4 fill-current" aria-hidden="true" />
                   ))}
                 </div>
                 <footer className="mt-3 text-sm font-semibold text-foreground">
                   {t.name}
-                  <span className="block text-xs font-normal text-muted-foreground">{t.course}</span>
+                  <span className="block text-xs font-normal text-muted-foreground">
+                    {t.course}
+                  </span>
                 </footer>
               </blockquote>
             ))}

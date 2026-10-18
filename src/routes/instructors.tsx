@@ -4,7 +4,6 @@ import { Award, Languages } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CtaBand } from "@/components/site/CtaBand";
 
-
 export const Route = createFileRoute("/instructors")({
   loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({

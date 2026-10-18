@@ -195,8 +195,8 @@ function PartnerLanding() {
               approved. Final partner approval happens only after document and vehicle verification.
             </p>
             <p className="mt-3 text-sm text-muted-foreground">
-              Contact our team for verified UPI or bank instructions before paying. After paying, enter
-              your reference in your partner dashboard for manual verification.
+              Pay your advance deposit online securely via Razorpay (UPI, Credit/Debit Card,
+              NetBanking). Receipts and references are instantly tracked in your partner dashboard.
             </p>
             <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
               {["Pending", "Paid", "Under Verification", "Verified", "Refunded"].map((s) => (
@@ -232,7 +232,8 @@ function PartnerLanding() {
         <div className="container-page grid gap-6 md:grid-cols-2">
           <div className="card-surface p-6">
             <h2 className="font-display flex items-center gap-2 text-lg font-extrabold">
-              <MapPin className="size-5 text-accent" aria-hidden="true" /> Partner availability areas
+              <MapPin className="size-5 text-accent" aria-hidden="true" /> Partner availability
+              areas
             </h2>
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {partnerAreas.map((area) => (

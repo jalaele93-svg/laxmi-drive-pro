@@ -55,8 +55,8 @@ function Contact() {
               <ContactRow Icon={MapPin} title="Our offices">
                 {site.offices.map((o) => (
                   <span key={o.label} className="mt-1 block first:mt-0">
-                    <span className="font-semibold text-foreground">{o.label}:</span>{" "}
-                    {o.line1}, {o.line2}, {o.state} – {o.pincode}
+                    <span className="font-semibold text-foreground">{o.label}:</span> {o.line1},{" "}
+                    {o.line2}, {o.state} – {o.pincode}
                   </span>
                 ))}
               </ContactRow>
@@ -103,7 +103,9 @@ function Contact() {
                   <p className="mx-auto max-w-sm text-sm text-muted-foreground">
                     Please call before visiting for directions and current training availability.
                   </p>
-                  <Button asChild variant="outline" size="sm"><a href={telHref}>Call for directions</a></Button>
+                  <Button asChild variant="outline" size="sm">
+                    <a href={telHref}>Call for directions</a>
+                  </Button>
                 </div>
               </div>
             )}

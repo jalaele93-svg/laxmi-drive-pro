@@ -4,7 +4,6 @@ import { ShieldCheck, TriangleAlert } from "lucide-react";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { CtaBand } from "@/components/site/CtaBand";
 
-
 export const Route = createFileRoute("/safety-rules")({
   loader: ({ context }) => context.queryClient.ensureQueryData(websiteContentOptions),
   head: () => ({
@@ -41,7 +40,10 @@ function SafetyRules() {
 
       <section className="section-y">
         <div className="container-page space-y-10">
-          <SectionHeading eyebrow="Simple rules" title="Follow these every time you ride or drive" />
+          <SectionHeading
+            eyebrow="Simple rules"
+            title="Follow these every time you ride or drive"
+          />
           <div className="grid gap-5 md:grid-cols-2">
             {safetyRules.map((r, i) => (
               <article key={r.title} className="card-surface animate-fade-up flex gap-4 p-6">
