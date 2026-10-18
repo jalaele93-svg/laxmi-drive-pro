@@ -14,11 +14,11 @@ export const site = {
   tagline: "Learn Car, Bike, Scooter & Auto Driving the Safe Way",
 
   /** Phone number for click-to-call links */
-  phoneDisplay: "+91 70088 91923", // shown on the website
-  phoneLink: "+917008891923", // used for tel: links
+  phoneDisplay: "+91 98617 04224", // shown on the website
+  phoneLink: "+919861704224", // used for tel: links
 
   /** WhatsApp number, digits only with country code */
-  whatsappNumber: "917008891923",
+  whatsappNumber: "919861704224",
   whatsappMessage: "Hello Laxmi Driving Training, I would like to book a driving lesson.",
 
   /** Contact email address */

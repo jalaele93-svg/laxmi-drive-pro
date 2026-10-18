@@ -3,6 +3,7 @@ import { MessageCircle, Phone, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { BookingForm, type BookingValues } from "@/components/site/BookingForm";
+import { LessonPayment } from "@/components/site/LessonPayment";
 import { site, telHref, whatsappHref } from "@/lib/site";
 
 type VehicleSearch = { vehicle?: BookingValues["vehicleType"] };
@@ -66,6 +67,7 @@ function BookPage() {
           </div>
 
           <aside className="space-y-5">
+            <LessonPayment />
             <div className="card-surface space-y-4 p-6">
               <span className="grid size-12 place-items-center rounded-xl bg-primary-soft text-primary">
                 <ShieldCheck className="size-6" aria-hidden="true" />
