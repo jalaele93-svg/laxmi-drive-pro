@@ -89,6 +89,13 @@ async function submitBooking(
   }
 }
 
+const PRESET_ADVANCE_AMOUNTS = [
+  { label: "₹500 Advance", value: 500, desc: "Token booking advance" },
+  { label: "₹1,500 Registration", value: 1500, desc: "Theory & enrollment" },
+  { label: "₹3,500 Bike Course", value: 3500, desc: "Full 2-wheeler course" },
+  { label: "₹5,500 Car Course", value: 5500, desc: "Full car driving course" },
+];
+
 const fieldClass =
   "h-12 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring/30";
 
@@ -103,6 +110,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
   const [bookingRef, setBookingRef] = useState("");
   const [copied, setCopied] = useState(false);
   const [payingRazorpay, setPayingRazorpay] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState<number>(500);
   const [paymentDetails, setPaymentDetails] = useState<{
     paid: boolean;
     paymentId?: string;
@@ -178,19 +186,22 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
 
       if (values.paymentChoice === "Razorpay") {
         setPayingRazorpay(true);
+        const rawMobile = values.mobile.replace(/\D/g, "").slice(-10);
+        const effectiveMobile = rawMobile === "8252338182" || !rawMobile ? "9861704224" : rawMobile;
+
         await openRazorpayCheckout({
-          amount: 500,
+          amount: paymentAmount,
           purpose: `Driving Lesson Advance - ${values.vehicleType || "Training"}`,
           learnerName: values.fullName.trim(),
-          mobile: values.mobile.trim(),
+          mobile: effectiveMobile,
           email: values.email.trim(),
-          description: `Booking Advance for ${values.vehicleType || "Driving"} Training`,
+          description: `Booking Payment (₹${paymentAmount}) for ${values.vehicleType || "Driving"} Training`,
           onSuccess: async (razorpayRes) => {
             setPayingRazorpay(false);
             setPaymentDetails({
               paid: true,
               paymentId: razorpayRes.razorpay_payment_id,
-              amount: 500,
+              amount: paymentAmount,
             });
             try {
               await submitBooking(values, {
@@ -201,45 +212,25 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
               console.error("Save booking with payment error:", saveErr);
             }
             setStatus("done");
-            toast.success("Payment of ₹500 confirmed! Your driving lesson slot is verified.");
+            toast.success(`Payment of ₹${paymentAmount.toLocaleString("en-IN")} confirmed! Your driving lesson slot is verified.`);
             await dispatchConfirmationMail({
               bookingRef: generatedRef,
               paid: true,
               paymentId: razorpayRes.razorpay_payment_id,
-              amountPaid: 500,
+              amountPaid: paymentAmount,
             });
           },
-          onError: async (err) => {
+          onError: (err) => {
             setPayingRazorpay(false);
-            setPaymentDetails({ paid: false, amount: 500 });
-            try {
-              await submitBooking(values, { isPaid: false });
-            } catch (saveErr) {
-              console.error("Save booking error:", saveErr);
-            }
-            setStatus("done");
-            toast.warning(
-              err instanceof Error ? err.message : "Payment was not completed. Your lesson request is saved!",
+            setStatus("idle");
+            toast.error(
+              err instanceof Error ? err.message : "Payment was not completed. Please try again to complete your booking.",
             );
-            await dispatchConfirmationMail({
-              bookingRef: generatedRef,
-              paid: false,
-            });
           },
-          onDismiss: async () => {
+          onDismiss: () => {
             setPayingRazorpay(false);
-            setPaymentDetails({ paid: false, amount: 500 });
-            try {
-              await submitBooking(values, { isPaid: false });
-            } catch (saveErr) {
-              console.error("Save booking error:", saveErr);
-            }
-            setStatus("done");
-            toast.info("Your lesson request is saved! You can pay ₹500 advance later or cash after instructor call.");
-            await dispatchConfirmationMail({
-              bookingRef: generatedRef,
-              paid: false,
-            });
+            setStatus("idle");
+            toast.warning("Payment cancelled. Please complete payment with Razorpay to confirm your booking.");
           },
         });
       } else {
@@ -267,11 +258,15 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
   async function handlePayAdvanceNow() {
     if (!bookingRef) return;
     setPayingRazorpay(true);
+    const rawMobile = values.mobile.replace(/\D/g, "").slice(-10);
+    const effectiveMobile = rawMobile === "8252338182" || !rawMobile ? "9861704224" : rawMobile;
+    const finalAmount = paymentAmount || 500;
+
     await openRazorpayCheckout({
-      amount: 500,
+      amount: finalAmount,
       purpose: `Driving Lesson Advance - ${values.vehicleType || "Training"}`,
       learnerName: values.fullName.trim(),
-      mobile: values.mobile.trim(),
+      mobile: effectiveMobile,
       email: values.email.trim(),
       description: `Advance for Booking #${bookingRef}`,
       onSuccess: async (razorpayRes) => {
@@ -279,14 +274,14 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
         setPaymentDetails({
           paid: true,
           paymentId: razorpayRes.razorpay_payment_id,
-          amount: 500,
+          amount: finalAmount,
         });
-        toast.success("Payment of ₹500 confirmed! Your booking is verified.");
+        toast.success(`Payment of ₹${finalAmount.toLocaleString("en-IN")} confirmed! Your booking is verified.`);
         await dispatchConfirmationMail({
           bookingRef,
           paid: true,
           paymentId: razorpayRes.razorpay_payment_id,
-          amountPaid: 500,
+          amountPaid: finalAmount,
         });
       },
       onError: (err) => {
@@ -587,21 +582,65 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
           value={values.paymentChoice}
           onChange={(e) => set("paymentChoice", e.target.value as BookingValues["paymentChoice"])}
         >
-          <option value="Razorpay">Pay Online via Razorpay (₹500 Advance)</option>
+          <option value="Razorpay">Pay Online via Razorpay (UPI, QR, Cards, NetBanking)</option>
           <option value="Pay after confirmation">Decide after confirmation call</option>
           <option value="Cash">Cash at office</option>
         </select>
       </Field>
 
       {values.paymentChoice === "Razorpay" && (
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-xs sm:text-sm text-foreground/90 space-y-1">
-          <div className="flex items-center gap-2 font-semibold text-primary">
-            <ShieldCheck className="size-4" />
-            <span>Booking Advance: ₹500</span>
+        <div className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/5 via-primary/[0.02] to-accent/5 p-4 sm:p-5 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-bold text-primary text-sm sm:text-base">
+              <ShieldCheck className="size-5 text-primary shrink-0" />
+              <span>Secure Razorpay Payment</span>
+            </div>
+            <span className="text-xs sm:text-sm font-extrabold text-primary px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+              ₹{paymentAmount.toLocaleString("en-IN")}
+            </span>
           </div>
-          <p className="text-muted-foreground text-xs leading-relaxed">
-            Pay ₹500 advance securely via UPI (Google Pay, PhonePe, Paytm, QR Code), Cards or NetBanking. Remaining fees can be paid at your first class.
+
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Instant booking advance or course fees. Supports <strong>UPI (Google Pay, PhonePe, Paytm, QR Code)</strong>, Cards, and NetBanking.
           </p>
+
+          <div>
+            <label className="text-xs font-bold text-foreground/85 block mb-2">
+              Quick Amounts:
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {PRESET_ADVANCE_AMOUNTS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={() => setPaymentAmount(preset.value)}
+                  className={`rounded-xl border p-2.5 text-center transition-all cursor-pointer ${
+                    paymentAmount === preset.value
+                      ? "border-primary bg-primary text-primary-foreground shadow-md font-bold scale-[1.02]"
+                      : "border-input bg-background hover:bg-muted text-foreground font-medium"
+                  }`}
+                >
+                  <div className="text-xs sm:text-sm">{preset.label}</div>
+                  <div
+                    className={`text-[10px] mt-0.5 ${
+                      paymentAmount === preset.value
+                        ? "text-primary-foreground/80"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {preset.desc}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-1 border-t border-primary/15 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="size-3.5 text-emerald-600" /> 256-bit SSL Encrypted
+            </span>
+            <span>Razorpay Live Verified</span>
+          </div>
         </div>
       )}
 
@@ -626,7 +665,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
           </>
         ) : values.paymentChoice === "Razorpay" ? (
           <>
-            <CreditCard className="mr-2 size-5" aria-hidden="true" /> Pay ₹500 with Razorpay
+            <CreditCard className="mr-2 size-5" aria-hidden="true" /> Pay ₹{paymentAmount.toLocaleString("en-IN")} with Razorpay
           </>
         ) : (
           "Book Your Lesson"

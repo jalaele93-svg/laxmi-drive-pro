@@ -3,7 +3,6 @@ import { MessageCircle, Phone, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHero, SectionHeading } from "@/components/site/Section";
 import { BookingForm, type BookingValues } from "@/components/site/BookingForm";
-import { LessonPayment } from "@/components/site/LessonPayment";
 import { site, telHref, whatsappHref } from "@/lib/site";
 
 type VehicleSearch = { vehicle?: BookingValues["vehicleType"] };
@@ -67,20 +66,30 @@ function BookPage() {
           </div>
 
           <aside className="space-y-5">
-            <LessonPayment />
             <div className="card-surface space-y-4 p-6">
               <span className="grid size-12 place-items-center rounded-xl bg-primary-soft text-primary">
                 <ShieldCheck className="size-6" aria-hidden="true" />
               </span>
               <h2 className="font-display text-lg font-bold">What happens next?</h2>
               <ol className="grid gap-3 text-sm text-muted-foreground">
-                <li>1. You send this form.</li>
-                <li>2. We call you on your mobile number to confirm the batch and timing.</li>
-                <li>
-                  3. Pay the agreed fees or advance online via Razorpay, or pay at our office.
-                </li>
-                <li>4. Instant digital receipt issued and we confirm your first class date.</li>
+                <li>1. Fill the form &amp; select your preferred vehicle and batch timing.</li>
+                <li>2. Choose to pay online via Razorpay or decide after our confirmation call.</li>
+                <li>3. If paying online, complete advance via UPI, Cards, or NetBanking (instant receipt).</li>
+                <li>4. We confirm your instructor, vehicle slot &amp; training start date.</li>
               </ol>
+            </div>
+
+            <div className="card-surface space-y-3 p-5 border border-primary/20 bg-primary/5">
+              <div className="flex items-center gap-2 font-bold text-primary text-sm">
+                <ShieldCheck className="size-4 text-emerald-600" />
+                <span>100% Safe &amp; Verified Institute</span>
+              </div>
+              <ul className="text-xs space-y-1.5 text-muted-foreground">
+                <li>• Government-approved driving training school</li>
+                <li>• Dual-control training fleet for 100% road safety</li>
+                <li>• Certified &amp; patient male/female instructors</li>
+                <li>• 256-bit SSL encrypted Razorpay payment gateway</li>
+              </ul>
             </div>
             <div className="card-surface space-y-2 bg-accent-soft p-6 text-sm">
               <p className="font-display font-bold">Need help right now?</p>

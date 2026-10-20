@@ -107,6 +107,11 @@ export async function openRazorpayCheckout({
     console.warn("Server order generation notice:", err);
   }
 
+  let cleanContact = (mobile ? mobile.replace(/\D/g, "").slice(-10) : "") || DEFAULT_RAZORPAY_PHONE;
+  if (cleanContact === "8252338182") {
+    cleanContact = DEFAULT_RAZORPAY_PHONE;
+  }
+
   const options: Record<string, unknown> = {
     key: RAZORPAY_KEY_ID,
     amount: amountInPaise,
@@ -117,13 +122,13 @@ export async function openRazorpayCheckout({
     image: "/favicon.png",
     prefill: {
       name: learnerName || undefined,
-      contact: (mobile ? mobile.replace(/\D/g, "").slice(-10) : "") || DEFAULT_RAZORPAY_PHONE,
+      contact: cleanContact,
       email: email || "customer@laxmidriving.com",
     },
     notes: {
       purpose,
       learner_name: learnerName,
-      mobile: (mobile ? mobile.replace(/\D/g, "").slice(-10) : "") || DEFAULT_RAZORPAY_PHONE,
+      mobile: cleanContact,
       contact_phone: DEFAULT_RAZORPAY_PHONE,
       ...notes,
     },
