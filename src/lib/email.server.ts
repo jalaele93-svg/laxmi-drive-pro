@@ -94,7 +94,6 @@ const sendBookingStatusSchema = z.object({
 export const sendBookingStatusEmail = createServerFn({ method: "POST" })
   .validator((data: unknown) => sendBookingStatusSchema.parse(data))
   .handler(async ({ data }) => {
-    const { user, transporter } = getTransporter();
     const badge = getStatusBadgeConfig(data.newStatus);
     const shortId = data.bookingId.length > 8 ? data.bookingId.slice(0, 8).toUpperCase() : data.bookingId;
 
@@ -256,23 +255,15 @@ Laxmi Motor Driving Training School
 </html>
 `;
 
-    try {
-      const info = await transporter.sendMail({
-        from: `"Laxmi Motor Driving School" <${user}>`,
-        replyTo: user,
-        to: data.customerEmail,
-        subject: `Booking Update: Your training booking is ${badge.label} | Laxmi Driving School`,
-        text: plainText,
-        html: htmlContent,
-      });
-
-      console.log(`[Status Email Sent] MessageId: ${info.messageId} to ${data.customerEmail}`);
-      return { success: true, messageId: info.messageId };
-    } catch (err: unknown) {
-      console.error("[Status Email Send Error]", err);
-      const message = err instanceof Error ? err.message : "Failed to send email notification.";
-      return { success: false, error: message };
-    }
+    const { sendEmailCore } = await import("./booking-email.server");
+    return await sendEmailCore({
+      senderName: "Laxmi Motor Driving School",
+      to: data.customerEmail,
+      replyTo: "inofdriving@gmail.com",
+      subject: `Booking Update: Your training booking is ${badge.label} | Laxmi Driving School`,
+      text: plainText,
+      html: htmlContent,
+    });
   });
 
 // 2. Customer completes a new booking on /book

@@ -26,6 +26,112 @@ function getTransporter() {
   };
 }
 
+export type EmailDispatchOptions = {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+  senderName?: string;
+};
+
+export async function sendEmailCore(options: EmailDispatchOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  const toList = (Array.isArray(options.to) ? options.to : [options.to]).map((e) => e.trim()).filter(Boolean);
+  if (toList.length === 0) {
+    return { success: false, error: "No recipient email specified." };
+  }
+
+  const resendApiKey = process.env["RESEND_API_KEY"]?.trim();
+  const brevoApiKey = process.env["BREVO_API_KEY"]?.trim();
+  const senderName = options.senderName || "Laxmi Motor Driving School";
+
+  // 1. Resend HTTP API (Zero socket drops, 100% native on Cloudflare Workers / Edge)
+  if (resendApiKey) {
+    try {
+      const fromEmail = process.env["RESEND_FROM"] || `${senderName} <onboarding@resend.dev>`;
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${resendApiKey}`,
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: toList,
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+          reply_to: options.replyTo,
+        }),
+      });
+
+      const data = (await res.json()) as { id?: string; message?: string };
+      if (res.ok && data.id) {
+        console.log(`[Resend Email Sent] id: ${data.id} to ${toList.join(", ")}`);
+        return { success: true, messageId: data.id };
+      }
+      console.warn("[Resend Warning]", data);
+      return { success: false, error: data.message || "Resend email delivery failed." };
+    } catch (err: unknown) {
+      console.error("[Resend Error]", err);
+      return { success: false, error: err instanceof Error ? err.message : "Resend request error." };
+    }
+  }
+
+  // 2. Brevo HTTP API (Free 300 emails/day)
+  if (brevoApiKey) {
+    try {
+      const senderEmail = process.env["BREVO_FROM"] || process.env["NODEMAILER_EMAIL"] || "frameflicks00@gmail.com";
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
+          "api-key": brevoApiKey,
+        },
+        body: JSON.stringify({
+          sender: { name: senderName, email: senderEmail },
+          to: toList.map((email) => ({ email })),
+          subject: options.subject,
+          htmlContent: options.html,
+          textContent: options.text,
+          replyTo: options.replyTo ? { email: options.replyTo } : undefined,
+        }),
+      });
+
+      const data = (await res.json()) as { messageId?: string; message?: string };
+      if (res.ok && data.messageId) {
+        console.log(`[Brevo Email Sent] messageId: ${data.messageId} to ${toList.join(", ")}`);
+        return { success: true, messageId: data.messageId };
+      }
+      console.warn("[Brevo Warning]", data);
+      return { success: false, error: data.message || "Brevo email delivery failed." };
+    } catch (err: unknown) {
+      console.error("[Brevo Error]", err);
+      return { success: false, error: err instanceof Error ? err.message : "Brevo request error." };
+    }
+  }
+
+  // 3. Fallback: Nodemailer SMTP
+  try {
+    const { user, transporter } = getTransporter();
+    const info = await transporter.sendMail({
+      from: `"${senderName}" <${user}>`,
+      replyTo: options.replyTo || user,
+      to: options.to,
+      subject: options.subject,
+      text: options.text,
+      html: options.html,
+    });
+    console.log(`[SMTP Email Sent] messageId: ${info.messageId} to ${toList.join(", ")}`);
+    return { success: true, messageId: info.messageId };
+  } catch (err: unknown) {
+    console.error("[SMTP Send Error]", err);
+    const msg = err instanceof Error ? err.message : "Failed to deliver email via SMTP.";
+    return { success: false, error: msg };
+  }
+}
+
 export type NewBookingPayload = {
   bookingRef: string;
   customerName: string;
@@ -182,16 +288,19 @@ Website: https://laxmidriving.com
 </html>
 `;
 
-    const adminInfo = await transporter.sendMail({
-      from: `"Laxmi Driving Alert" <${user}>`,
-      replyTo: hasValidCustomerEmail ? rawEmail : user,
+    const adminRes = await sendEmailCore({
+      senderName: "Laxmi Driving Alert",
       to: ADMIN_NOTIFICATION_EMAILS,
+      replyTo: hasValidCustomerEmail ? rawEmail : undefined,
       subject: adminSubject,
       text: adminPlainText,
       html: adminHtml,
     });
-    console.log(`[Admin Booking Alert Sent] MessageId: ${adminInfo.messageId} to ${ADMIN_NOTIFICATION_EMAILS.join(", ")}`);
-    adminEmailSent = true;
+    if (adminRes.success) {
+      adminEmailSent = true;
+    } else {
+      errorMsg = adminRes.error || "Failed to deliver admin notification.";
+    }
   } catch (err: unknown) {
     console.error("[Admin Alert Email Error]", err);
     errorMsg = err instanceof Error ? err.message : "Failed to send admin notification email.";
@@ -433,17 +542,18 @@ Laxmi Motor Driving Training School
 </html>
 `;
 
-      const custInfo = await transporter.sendMail({
-        from: `"Laxmi Motor Driving School" <${user}>`,
-        replyTo: "inofdriving@gmail.com",
+      const custRes = await sendEmailCore({
+        senderName: "Laxmi Motor Driving School",
         to: rawEmail,
+        replyTo: "inofdriving@gmail.com",
         subject: customerSubject,
         text: customerPlainText,
         html: customerHtml,
       });
 
-      console.log(`[Customer Booking Email Sent] MessageId: ${custInfo.messageId} to ${rawEmail}`);
-      customerEmailSent = true;
+      if (custRes.success) {
+        customerEmailSent = true;
+      }
     } catch (err: unknown) {
       console.error("[Customer Booking Email Error]", err);
     }
@@ -502,14 +612,13 @@ Thank you,
 Laxmi Motor Driving Training School
 `;
 
-  try {
-    const info = await transporter.sendMail({
-      from: `"Laxmi Motor Driving School" <${user}>`,
-      replyTo: "inofdriving@gmail.com",
-      to: data.customerEmail,
-      subject: `Booking Status Update: ${newStatus} [Ref: #${shortId}]`,
-      text: plainText,
-      html: `<div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px;">
+  const res = await sendEmailCore({
+    senderName: "Laxmi Motor Driving School",
+    to: data.customerEmail,
+    replyTo: "inofdriving@gmail.com",
+    subject: `Booking Status Update: ${newStatus} [Ref: #${shortId}]`,
+    text: plainText,
+    html: `<div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px;">
         <h2 style="color: #1E40E7; margin-top: 0;">Laxmi Motor Driving Training School</h2>
         <p>Namaste <strong>${customerName}</strong>,</p>
         <p>Your driving lesson booking status is now: <strong style="color: #15803d; font-size: 16px;">${newStatus}</strong>.</p>
@@ -523,13 +632,7 @@ Laxmi Motor Driving Training School
           Website: <a href="https://laxmidriving.com" style="color: #1E40E7;">laxmidriving.com</a>
         </p>
       </div>`,
-    });
+  });
 
-    console.log(`[Status Email Sent] MessageId: ${info.messageId} to ${data.customerEmail}`);
-    return { success: true, messageId: info.messageId };
-  } catch (err: unknown) {
-    console.error("[Status Email Send Error]", err);
-    const errMessage = err instanceof Error ? err.message : "Failed to send email notification.";
-    return { success: false, error: errMessage };
-  }
+  return res;
 }

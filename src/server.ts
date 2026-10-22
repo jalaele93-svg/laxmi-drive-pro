@@ -55,14 +55,14 @@ export default {
           const { sendBookingConfirmationEmailDirect } = await import("./lib/booking-email.server");
           const res = await sendBookingConfirmationEmailDirect(body);
           return new Response(JSON.stringify(res), {
-            status: res.success ? 200 : 400,
+            status: 200,
             headers: { "content-type": "application/json" },
           });
         } catch (err: unknown) {
           console.error("[API send-booking-confirmation Error]", err);
           const msg = err instanceof Error ? err.message : "Failed to process booking confirmation email";
           return new Response(JSON.stringify({ success: false, error: msg }), {
-            status: 500,
+            status: 200,
             headers: { "content-type": "application/json" },
           });
         }
@@ -74,14 +74,14 @@ export default {
           const { sendBookingStatusEmailDirect } = await import("./lib/booking-email.server");
           const res = await sendBookingStatusEmailDirect(body);
           return new Response(JSON.stringify(res), {
-            status: res.success ? 200 : 400,
+            status: 200,
             headers: { "content-type": "application/json" },
           });
         } catch (err: unknown) {
           console.error("[API send-booking-status Error]", err);
           const msg = err instanceof Error ? err.message : "Failed to process status email";
           return new Response(JSON.stringify({ success: false, error: msg }), {
-            status: 500,
+            status: 200,
             headers: { "content-type": "application/json" },
           });
         }
