@@ -4,7 +4,10 @@ import { z } from "zod";
 
 function getTransporter() {
   const host = process.env["NODEMAILER_HOST"] || "smtp.gmail.com";
-  const port = Number(process.env["NODEMAILER_PORT"] || 465);
+  // For Gmail, ALWAYS force port 465 with direct SSL. Port 587 STARTTLS socket upgrade fails on Cloudflare Workers / workerd.
+  const isGmail = host.toLowerCase().includes("gmail");
+  const port = isGmail ? 465 : Number(process.env["NODEMAILER_PORT"] || 465);
+  const secure = port === 465;
   const user = process.env["NODEMAILER_EMAIL"] || "frameflicks00@gmail.com";
   const pass = process.env["NODEMAILER_PASSWORD"] || "rxed baqr gfib fjac";
 
@@ -13,7 +16,7 @@ function getTransporter() {
     transporter: nodemailer.createTransport({
       host,
       port,
-      secure: port === 465,
+      secure,
       auth: {
         user,
         pass,
