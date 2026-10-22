@@ -4,7 +4,7 @@ import { z } from "zod";
 
 function getTransporter() {
   const host = process.env["NODEMAILER_HOST"] || "smtp.gmail.com";
-  const port = Number(process.env["NODEMAILER_PORT"] || 587);
+  const port = Number(process.env["NODEMAILER_PORT"] || 465);
   const user = process.env["NODEMAILER_EMAIL"] || "frameflicks00@gmail.com";
   const pass = process.env["NODEMAILER_PASSWORD"] || "rxed baqr gfib fjac";
 
@@ -17,9 +17,6 @@ function getTransporter() {
       auth: {
         user,
         pass,
-      },
-      tls: {
-        rejectUnauthorized: false,
       },
       connectionTimeout: 15000,
       greetingTimeout: 15000,
@@ -100,7 +97,7 @@ export const sendBookingStatusEmail = createServerFn({ method: "POST" })
 
     const plainText = `
 LAXMI MOTOR DRIVING TRAINING SCHOOL - BOOKING STATUS UPDATE
-Government Approved Driving School · Rohtak, Haryana
+Plot No.-101, Palaspur, Main Road, PS.-Pattapur, Distt.-Ganjam, Odisha - 761013
 
 Namaste ${data.customerName},
 
@@ -114,8 +111,8 @@ BOOKING DETAILS:
 • Booking Reference: #${shortId}
 ${data.vehicleType ? `• Vehicle Training: ${data.vehicleType}\n` : ""}${data.preferredDate ? `• Scheduled Date: ${data.preferredDate} ${data.preferredTime || ""}\n` : ""}${data.mobile ? `• Contact Mobile: ${data.mobile}\n` : ""}
 NEED HELP?
-• Phone: +91 94160 55858
-• WhatsApp: +91 94160 55858
+• Phone: +91 98617 04224
+• WhatsApp: +91 98617 04224
 • Website: https://laxmidriving.com
 
 Thank you,
@@ -143,7 +140,7 @@ Laxmi Motor Driving Training School
                 Laxmi Motor Driving Training School
               </h1>
               <p style="margin: 8px 0 0; color: #cbd5e1; font-size: 14px;">
-                Government Approved Driving Training · Rohtak, Haryana
+                Government Approved Driving Training · Distt.-Ganjam & Rayagada, Odisha
               </p>
             </td>
           </tr>
