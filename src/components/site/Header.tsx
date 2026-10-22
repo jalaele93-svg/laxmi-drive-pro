@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   MessageSquareQuote,
   HelpCircle,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/site/Logo";
@@ -37,6 +38,7 @@ const moreNav = [
   { to: "/safety-rules", label: "Safety Rules", icon: ShieldCheck },
   { to: "/testimonials", label: "Testimonials", icon: MessageSquareQuote },
   { to: "/faq", label: "FAQ", icon: HelpCircle },
+  { to: "/admin", label: "Admin Portal", icon: Lock },
 ] as const;
 
 export function Header() {
@@ -180,6 +182,15 @@ export function Header() {
                   <Phone className="size-3.5" aria-hidden="true" /> Call {site.phoneDisplay}
                 </a>
               </Button>
+            </div>
+            <div className="mt-2 text-center pt-1 border-t border-border/50">
+              <Link
+                to="/admin"
+                onClick={() => setOpen(false)}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1.5 py-1 font-medium"
+              >
+                <Lock className="size-3" /> Staff / Admin Login
+              </Link>
             </div>
           </nav>
         </div>

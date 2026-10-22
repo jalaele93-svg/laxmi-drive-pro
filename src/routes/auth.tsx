@@ -36,10 +36,21 @@ const fieldClass =
   "h-12 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring/30";
 
 function safePath(value: string | undefined): string {
+  if (!value) return "/partner-dashboard";
+  let path = value;
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    try {
+      const parsed = new URL(path);
+      path = parsed.pathname;
+    } catch {
+      // ignore
+    }
+  }
+  if (path === "admin" || path.startsWith("/admin")) return "/admin";
   // eslint-disable-next-line no-control-regex
-  if (!value || !value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u001f]/.test(value))
+  if (!path.startsWith("/") || path.startsWith("//") || /[\\\u0000-\u001f]/.test(path))
     return "/partner-dashboard";
-  return value;
+  return path;
 }
 
 const ownerEmail = "inofdriving@gmail.com";
@@ -55,18 +66,24 @@ function formatPartnerPassword(pwd: string): string {
 function AuthPage() {
   const { redirect } = Route.useSearch();
   const navigate = useNavigate();
+  const target = safePath(redirect);
+  const staffLogin = target.startsWith("/admin");
+
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [fullName, setFullName] = useState("");
   const [mobile, setMobile] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(staffLogin ? ownerEmail : "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
   const [resendAfter, setResendAfter] = useState(0);
 
-  const target = safePath(redirect);
-  const staffLogin = target.startsWith("/admin");
+  useEffect(() => {
+    if (staffLogin && !email) {
+      setEmail(ownerEmail);
+    }
+  }, [staffLogin, email]);
 
   useEffect(() => {
     let active = true;
@@ -83,10 +100,19 @@ function AuthPage() {
         });
         if (!active) return;
         if (roleError || !allowed) {
-          setFormError(
-            "This account does not have staff access. Sign out to use your authorised staff account.",
-          );
-          return;
+          const { data: roleRow } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", data.user.id)
+            .in("role", ["admin", "staff"])
+            .maybeSingle();
+
+          if (!roleRow) {
+            setFormError(
+              `You are currently signed in as "${data.user.email || "User"}". This account does not have Admin / Staff access. Please click "Sign out of current account" below to log in with your Admin account (${ownerEmail}).`,
+            );
+            return;
+          }
         }
       }
       if (active) await navigate({ to: target, replace: true });
@@ -134,6 +160,29 @@ function AuthPage() {
     } catch (error) {
       setFormError(
         error instanceof Error ? error.message : "Could not resend the confirmation email.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onForgotPassword() {
+    const address = staffLogin ? ownerEmail : email.trim();
+    if (!address) {
+      setFormError("Enter your email address first.");
+      return;
+    }
+    setBusy(true);
+    setFormError("");
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(address, {
+        redirectTo: confirmationUrl(),
+      });
+      if (error) throw error;
+      toast.success(`Password reset email sent to ${address}. Please check your inbox and spam folder.`);
+    } catch (error) {
+      setFormError(
+        error instanceof Error ? error.message : "Could not send password reset email.",
       );
     } finally {
       setBusy(false);
@@ -375,17 +424,22 @@ function AuthPage() {
                 </p>
               )}
               {formError && (
-                <div role="alert" className="grid gap-2 text-sm text-destructive">
-                  <p>{formError}</p>
+                <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 grid gap-3 text-sm text-destructive">
+                  <p className="font-medium leading-relaxed">{formError}</p>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="destructive"
+                    size="sm"
+                    className="w-full sm:w-auto font-semibold cursor-pointer"
                     onClick={async () => {
+                      setBusy(true);
                       await supabase.auth.signOut();
                       setFormError("");
+                      setBusy(false);
+                      toast.info("Signed out of current account. You can now log in as Admin.");
                     }}
                   >
-                    Sign out of current account
+                    Sign out of current account & Log In as Admin
                   </Button>
                 </div>
               )}
@@ -497,6 +551,18 @@ function AuthPage() {
                       ? "Choose a 4 to 6 digit PIN or password for your partner account."
                       : "Enter your 4 to 6 digit partner PIN or password."}
                   </p>
+                )}
+                {staffLogin && mode === "signin" && (
+                  <div className="flex justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={onForgotPassword}
+                      disabled={busy}
+                      className="text-xs text-primary hover:underline font-semibold cursor-pointer"
+                    >
+                      Forgot / Need to set password? Send reset link
+                    </button>
+                  </div>
                 )}
               </div>
 

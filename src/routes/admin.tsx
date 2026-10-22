@@ -11,13 +11,27 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
-  beforeLoad: async ({ location }) => {
+  beforeLoad: async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) throw redirect({ to: "/auth", search: { redirect: location.href } });
+    if (!user) {
+      throw redirect({ to: "/auth", search: { redirect: "/admin" } });
+    }
     const { data: allowed, error } = await supabase.rpc("is_staff", { _user_id: user.id });
-    if (error || !allowed) throw redirect({ to: "/" });
+    if (error || !allowed) {
+      // Check user_roles table directly as well for robustness
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .in("role", ["admin", "staff"])
+        .maybeSingle();
+
+      if (!roleRow) {
+        throw redirect({ to: "/auth", search: { redirect: "/admin" } });
+      }
+    }
   },
   head: () => ({
     meta: [

@@ -301,6 +301,10 @@ export function Footer() {
             <Link to="/contact" className="hover:text-accent transition-colors">
               Support
             </Link>
+            <span>•</span>
+            <Link to="/admin" className="hover:text-accent transition-colors text-white/70 hover:text-white font-medium">
+              Admin Portal
+            </Link>
           </div>
         </div>
       </div>
