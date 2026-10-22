@@ -34,22 +34,39 @@ export type EmailDispatchOptions = {
   senderName?: string;
 };
 
+function cleanToken(raw?: string): string {
+  if (!raw) return "";
+  return raw.replace(/['"\s\r\n\t]/g, "").trim();
+}
+
+function getSanitizedResendKey(): string {
+  const DEFAULT_KEY = ["re_", "2HKPqVJn_", "5VGvfUcLY8nUdudr9Bb8DMqE"].join("");
+  const envVal = process.env["RESEND_API_KEY"];
+  if (typeof envVal === "string") {
+    const cleaned = cleanToken(envVal);
+    if (cleaned.startsWith("re_") && cleaned.length >= 25) {
+      return cleaned;
+    }
+  }
+  return DEFAULT_KEY;
+}
+
 export async function sendEmailCore(options: EmailDispatchOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const toList = (Array.isArray(options.to) ? options.to : [options.to]).map((e) => e.trim()).filter(Boolean);
   if (toList.length === 0) {
     return { success: false, error: "No recipient email specified." };
   }
 
-  const DEFAULT_RESEND_KEY = ["re_", "2HKPqVJn_", "5VGvfUcLY8nUdudr9Bb8DMqE"].join("");
-  const resendApiKey = process.env["RESEND_API_KEY"]?.trim() || DEFAULT_RESEND_KEY;
-  const brevoApiKey = process.env["BREVO_API_KEY"]?.trim();
+  const resendApiKey = getSanitizedResendKey();
+  const brevoApiKey = cleanToken(process.env["BREVO_API_KEY"]);
   const senderName = options.senderName || "Laxmi Motor Driving School";
 
   // 1. Resend HTTP API (Zero socket drops, 100% native on Cloudflare Workers / Edge)
   if (resendApiKey) {
     try {
       const defaultDomainFrom = `${senderName} <booking@laxmidriving.com>`;
-      const configuredFrom = process.env["RESEND_FROM"] || defaultDomainFrom;
+      const rawFrom = cleanToken(process.env["RESEND_FROM"]);
+      const configuredFrom = rawFrom && rawFrom.includes("@") ? rawFrom : defaultDomainFrom;
 
       async function trySendWithResend(fromAddress: string, recipients: string[]) {
         const resp = await fetch("https://api.resend.com/emails", {
