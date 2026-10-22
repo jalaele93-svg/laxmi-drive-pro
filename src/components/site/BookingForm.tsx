@@ -128,12 +128,13 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
     paymentId?: string;
     amountPaid?: number;
   }) {
-    const trimmedEmail = values.email.trim().toLowerCase();
-    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmedEmail)) return;
+    const rawEmail = values.email.trim();
+    const hasValidEmail = Boolean(rawEmail && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(rawEmail));
+    const trimmedEmail = hasValidEmail ? rawEmail.toLowerCase() : "";
 
     const payload = {
       bookingRef: params.bookingRef,
-      customerName: values.fullName.trim(),
+      customerName: values.fullName.trim() || "Learner",
       customerEmail: trimmedEmail,
       mobile: values.mobile.trim(),
       vehicleType: values.vehicleType || "Training",
@@ -141,7 +142,7 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
       date: values.date || "",
       time: values.time || "",
       message: values.message.trim() || "",
-      paymentChoice: values.paymentChoice || "Pay after confirmation",
+      paymentChoice: values.paymentChoice || "Decide after confirmation call",
       paymentStatus: params.paid ? "Paid" : "Unpaid",
       paymentId: params.paymentId,
       amountPaid: params.amountPaid,

@@ -71,30 +71,28 @@ export function LessonPayment({
         setPaying(false);
         setPaymentSuccess({ id: res.razorpay_payment_id, method: "Razorpay" });
         toast.success(`Payment of ₹${numAmount.toLocaleString("en-IN")} successful!`);
-        if (email && email.trim()) {
-          try {
-            await fetch("/api/send-booking-confirmation", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                bookingRef: "LDT-PAY-" + Math.floor(100000 + Math.random() * 900000),
-                customerName: name.trim() || "Learner",
-                customerEmail: email.trim(),
-                mobile: mobile.trim(),
-                vehicleType: purpose,
-                experience: "General",
-                date: new Date().toISOString().split("T")[0],
-                time: "Flexible",
-                message: `Direct Online Payment: ${purpose}`,
-                paymentChoice: "Razorpay",
-                paymentStatus: "Paid",
-                paymentId: res.razorpay_payment_id,
-                amountPaid: numAmount,
-              }),
-            });
-          } catch (e) {
-            console.warn("Direct payment email warning:", e);
-          }
+        try {
+          await fetch("/api/send-booking-confirmation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              bookingRef: "LDT-PAY-" + Math.floor(100000 + Math.random() * 900000),
+              customerName: name.trim() || "Learner",
+              customerEmail: email?.trim() || "",
+              mobile: mobile.trim(),
+              vehicleType: purpose,
+              experience: "General",
+              date: new Date().toISOString().split("T")[0],
+              time: "Flexible",
+              message: `Direct Online Payment: ${purpose}`,
+              paymentChoice: "Razorpay",
+              paymentStatus: "Paid",
+              paymentId: res.razorpay_payment_id,
+              amountPaid: numAmount,
+            }),
+          });
+        } catch (e) {
+          console.warn("Direct payment email warning:", e);
         }
       },
       onError: (err) => {

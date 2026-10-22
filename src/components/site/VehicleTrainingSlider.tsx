@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -62,42 +62,68 @@ const slides = [
   },
 ] as const;
 
-const AUTO_ADVANCE_MS = 3000;
+const AUTO_ADVANCE_MS = 3500;
 
 export function VehicleTrainingSlider() {
   const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const touchStartX = useRef<number | null>(null);
+  const pausedUntilRef = useRef<number>(0);
+  const pointerStartX = useRef<number | null>(null);
+  const isDragging = useRef<boolean>(false);
+
+  const pauseTemporarily = useCallback((ms = 4500) => {
+    pausedUntilRef.current = Date.now() + ms;
+  }, []);
+
+  const move = useCallback((direction: number) => {
+    pauseTemporarily(5000);
+    setActive((current) => (current + direction + slides.length) % slides.length);
+  }, [pauseTemporarily]);
+
+  const selectSlide = useCallback((index: number) => {
+    pauseTemporarily(5000);
+    setActive(index);
+  }, [pauseTemporarily]);
 
   useEffect(() => {
-    if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => {
+      if (Date.now() < pausedUntilRef.current) return;
       setActive((current) => (current + 1) % slides.length);
     }, AUTO_ADVANCE_MS);
-    return () => window.clearInterval(timer);
-  }, [paused]);
 
-  const move = (direction: number) => {
-    setActive((current) => (current + direction + slides.length) % slides.length);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    pointerStartX.current = e.clientX;
+    isDragging.current = true;
   };
 
-  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    const start = touchStartX.current;
-    touchStartX.current = null;
-    if (start === null) return;
-    const distance = event.changedTouches[0]?.clientX;
-    if (distance === undefined || Math.abs(start - distance) < 45) return;
-    move(start > distance ? 1 : -1);
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current || pointerStartX.current === null) return;
+    const diff = pointerStartX.current - e.clientX;
+    pointerStartX.current = null;
+    isDragging.current = false;
+
+    if (Math.abs(diff) > 35) {
+      if (diff > 0) {
+        move(1);
+      } else {
+        move(-1);
+      }
+    }
+  };
+
+  const handlePointerCancel = () => {
+    pointerStartX.current = null;
+    isDragging.current = false;
   };
 
   return (
     <div
-      className={paused ? "vehicle-slider-paused" : undefined}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocusCapture={() => setPaused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
+      className="relative w-full"
+      onMouseEnter={() => pauseTemporarily(3500)}
+      onMouseLeave={() => {
+        pausedUntilRef.current = 0;
       }}
     >
       <div className="mb-6 flex items-end justify-between gap-4">
@@ -111,8 +137,8 @@ export function VehicleTrainingSlider() {
               role="tab"
               aria-selected={active === index}
               aria-controls={`vehicle-slide-${index}`}
-              onClick={() => setActive(index)}
-              className="px-3 sm:px-4"
+              onClick={() => selectSlide(index)}
+              className="px-3 sm:px-4 cursor-pointer"
             >
               <Icon aria-hidden="true" />
               <span className="hidden sm:inline">{label}</span>
@@ -127,6 +153,7 @@ export function VehicleTrainingSlider() {
             variant="outline"
             onClick={() => move(-1)}
             aria-label="Previous vehicle"
+            className="cursor-pointer"
           >
             <ChevronLeft aria-hidden="true" />
           </Button>
@@ -136,6 +163,7 @@ export function VehicleTrainingSlider() {
             variant="outline"
             onClick={() => move(1)}
             aria-label="Next vehicle"
+            className="cursor-pointer"
           >
             <ChevronRight aria-hidden="true" />
           </Button>
@@ -143,16 +171,18 @@ export function VehicleTrainingSlider() {
       </div>
 
       <div
-        className="relative aspect-[4/5] touch-pan-y overflow-hidden rounded-2xl bg-primary-dark shadow-[var(--shadow-lift)] sm:aspect-[16/9] lg:aspect-[21/9]"
-        onTouchStart={(event) => {
-          touchStartX.current = event.touches[0]?.clientX ?? null;
-        }}
-        onTouchEnd={handleTouchEnd}
+        className="relative aspect-[4/5] touch-pan-y overflow-hidden rounded-2xl bg-primary-dark shadow-[var(--shadow-lift)] sm:aspect-[16/9] lg:aspect-[21/9] cursor-grab active:cursor-grabbing"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
         aria-live="polite"
       >
         <div
-          className="flex h-full w-full transition-transform duration-700 ease-in-out motion-reduce:transition-none"
-          style={{ transform: `translateX(-${active * 100}%)` }}
+          className="flex h-full w-full transition-transform duration-600 ease-out"
+          style={{
+            transform: `translate3d(-${active * 100}%, 0, 0)`,
+            willChange: "transform",
+          }}
         >
           {slides.map((slide, index) => (
             <article
@@ -160,18 +190,19 @@ export function VehicleTrainingSlider() {
               id={`vehicle-slide-${index}`}
               role="tabpanel"
               aria-hidden={active !== index}
-              className="relative h-full w-full shrink-0 grow-0 basis-full overflow-hidden"
+              className="relative h-full w-full min-w-full shrink-0 grow-0 basis-full overflow-hidden"
             >
               <img
                 src={slide.image}
                 alt={slide.alt}
+                draggable={false}
                 loading={index === 0 ? "eager" : "lazy"}
                 width={1600}
                 height={912}
-                className="size-full object-cover transition-transform duration-700 hover:scale-105"
+                className="size-full object-cover transition-transform duration-700 hover:scale-105 pointer-events-none"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-primary-dark/40 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-6 text-primary-foreground sm:p-8 lg:p-10">
+              <div className="absolute inset-0 bg-gradient-to-t from-primary-dark via-primary-dark/40 to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 p-6 text-primary-foreground sm:p-8 lg:p-10 pointer-events-auto">
                 <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold sm:text-sm">
                   <span className="rounded-full border border-primary-foreground/30 bg-primary-dark/50 px-3 py-1 backdrop-blur-sm">
                     {slide.category}
@@ -197,19 +228,25 @@ export function VehicleTrainingSlider() {
         </div>
 
         <div
-          className="pointer-events-none absolute inset-x-6 top-5 z-20 flex gap-2 sm:inset-x-auto sm:right-6 sm:left-1/2"
-          aria-hidden="true"
+          className="absolute inset-x-6 top-5 z-20 flex gap-2 sm:inset-x-auto sm:right-6 sm:left-1/2"
+          aria-label="Slide indicators"
         >
           {slides.map((slide, index) => (
             <button
               key={slide.label}
               type="button"
-              onClick={() => setActive(index)}
-              className="pointer-events-auto h-1.5 flex-1 overflow-hidden rounded-full bg-primary-foreground/30 transition-all hover:bg-primary-foreground/60 sm:w-12"
+              onClick={(e) => {
+                e.stopPropagation();
+                selectSlide(index);
+              }}
+              className="h-1.5 flex-1 overflow-hidden rounded-full bg-primary-foreground/30 transition-all hover:bg-primary-foreground/60 sm:w-12 cursor-pointer"
               aria-label={`Go to ${slide.label}`}
+              aria-current={active === index ? "true" : undefined}
             >
-              {active === index && (
-                <span key={active} className="vehicle-slider-progress block h-full bg-accent" />
+              {active === index ? (
+                <span key={active} className="block h-full w-full bg-accent animate-pulse" />
+              ) : (
+                <span className="block h-full w-0" />
               )}
             </button>
           ))}
@@ -222,8 +259,8 @@ export function VehicleTrainingSlider() {
           <button
             key={slide.label}
             type="button"
-            onClick={() => setActive(index)}
-            className={`group relative flex min-w-[200px] sm:min-w-0 flex-1 snap-start items-center gap-3 rounded-xl border p-2.5 text-left transition-all ${
+            onClick={() => selectSlide(index)}
+            className={`group relative flex min-w-[200px] sm:min-w-0 flex-1 snap-start items-center gap-3 rounded-xl border p-2.5 text-left transition-all cursor-pointer ${
               active === index
                 ? "border-primary bg-primary/10 shadow-sm ring-2 ring-primary/30"
                 : "border-border bg-card/60 hover:border-primary/40 hover:bg-card"
@@ -233,6 +270,7 @@ export function VehicleTrainingSlider() {
               <img
                 src={slide.image}
                 alt={slide.label}
+                draggable={false}
                 className="size-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
             </div>
