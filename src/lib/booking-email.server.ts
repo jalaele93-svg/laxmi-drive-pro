@@ -1,6 +1,5 @@
-import nodemailer from "nodemailer";
-
-function getTransporter() {
+async function getTransporter() {
+  const nodemailer = (await import("nodemailer")).default;
   const host = process.env["NODEMAILER_HOST"] || "smtp.gmail.com";
   // For Gmail, ALWAYS force port 465 with direct SSL. Port 587 STARTTLS socket upgrade fails on Cloudflare Workers / workerd.
   const isGmail = host.toLowerCase().includes("gmail");
@@ -135,7 +134,7 @@ export async function sendEmailCore(options: EmailDispatchOptions): Promise<{ su
 
   // 3. Fallback: Nodemailer SMTP
   try {
-    const { user, transporter } = getTransporter();
+    const { user, transporter } = await getTransporter();
     const info = await transporter.sendMail({
       from: `"${senderName}" <${user}>`,
       replyTo: options.replyTo || user,
@@ -176,7 +175,6 @@ const ADMIN_NOTIFICATION_EMAILS = [
 ];
 
 export async function sendBookingConfirmationEmailDirect(data: NewBookingPayload) {
-  const { user, transporter } = getTransporter();
   const customerName = data.customerName?.trim() || "Learner";
   const bookingRef = data.bookingRef?.trim() || "REF";
   const vehicleType = data.vehicleType?.trim() || "Training";

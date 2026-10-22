@@ -22,7 +22,6 @@ import {
   type Instructor,
   type Partner,
 } from "@/lib/operations";
-import { sendBookingStatusEmail } from "@/lib/email.server";
 
 type View =
   | "overview"
@@ -269,7 +268,6 @@ function BookingRow({
                 let emailSuccess = false;
                 let errorMsg = "";
 
-                // 1. Direct API call
                 try {
                   const apiRes = await fetch("/api/send-booking-status", {
                     method: "POST",
@@ -284,20 +282,6 @@ function BookingRow({
                   }
                 } catch (e: unknown) {
                   console.warn("Direct status email error:", e);
-                }
-
-                // 2. Server function fallback
-                if (!emailSuccess) {
-                  try {
-                    const fnRes = await sendBookingStatusEmail({ data: payload });
-                    if (fnRes.success) {
-                      emailSuccess = true;
-                    } else if (fnRes.error) {
-                      errorMsg = fnRes.error;
-                    }
-                  } catch (fnErr: unknown) {
-                    console.warn("ServerFn status email fallback error:", fnErr);
-                  }
                 }
 
                 if (emailSuccess) {

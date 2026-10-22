@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { site, telHref } from "@/lib/site";
 import { supabase } from "@/integrations/supabase/client";
 import { openRazorpayCheckout } from "@/lib/razorpay";
-import { sendNewBookingConfirmationEmail } from "@/lib/email.server";
 import { toast } from "sonner";
 
 export type BookingValues = {
@@ -159,14 +158,6 @@ export function BookingForm({ defaultVehicle }: { defaultVehicle?: BookingValues
       if (jsonRes?.success) sent = true;
     } catch (e) {
       console.warn("Direct email API warning:", e);
-    }
-
-    if (!sent) {
-      try {
-        await sendNewBookingConfirmationEmail({ data: payload });
-      } catch (e) {
-        console.warn("ServerFn fallback warning:", e);
-      }
     }
   }
 
