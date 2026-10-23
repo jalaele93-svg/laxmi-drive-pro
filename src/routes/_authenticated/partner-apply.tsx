@@ -213,12 +213,6 @@ function PartnerApply() {
           applicationId.current = null;
           return;
         }
-        if (
-          !["Draft", "Correction Required", "Payment Pending", "Submitted"].includes(data.status)
-        ) {
-          setDone({ no: data.application_no ?? data.id, ref: Boolean(data.payment_reference) });
-          return;
-        }
         setF((prev) => {
           const next = { ...prev };
           for (const key of Object.keys(prev) as FormKey[]) {
@@ -227,6 +221,11 @@ function PartnerApply() {
           }
           return next;
         });
+
+        if (data.terms_accepted || !["Draft", "Correction Required"].includes(data.status)) {
+          setDone({ no: data.application_no ?? data.id, ref: Boolean(data.payment_reference) });
+          return;
+        }
         const { data: docs, error: docError } = await supabase
           .from("partner_documents")
           .select("doc_type")
@@ -384,6 +383,7 @@ function PartnerApply() {
       const result = await finalizePartnerApplication({
         data: { id: app.id, terms: true, reference: f.payment_reference },
       });
+      localStorage.removeItem(`partner-draft:${user.id}`);
       setDone(result);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -417,7 +417,29 @@ function PartnerApply() {
             </li>
             <li>🕑 Documents Under Verification</li>
           </ul>
-          {!done.ref && <PaymentBox />}
+          {!done.ref && (
+            <PaymentBox
+              f={f}
+              set={set}
+              onPaid={async (paymentId) => {
+                setDone((prev) => (prev ? { ...prev, ref: true } : null));
+                if (applicationId.current) {
+                  try {
+                    await supabase
+                      .from("partner_applications")
+                      .update({
+                        payment_reference: paymentId,
+                        payment_status: "Under Verification",
+                        payment_method: "Razorpay",
+                      })
+                      .eq("id", applicationId.current);
+                  } catch (e) {
+                    console.error("Failed to update payment reference after submit:", e);
+                  }
+                }
+              }}
+            />
+          )}
           <p className="mt-6 text-xs text-muted-foreground">
             Payment only starts enrollment processing. Final approval happens after document and
             vehicle verification.
@@ -647,7 +669,15 @@ function PartnerApply() {
   );
 }
 
-function PaymentBox({ f, set }: { f: Form; set: (k: FormKey, v: string) => void }) {
+function PaymentBox({
+  f,
+  set,
+  onPaid,
+}: {
+  f?: Form;
+  set?: (k: FormKey, v: string) => void;
+  onPaid?: (ref: string) => void;
+}) {
   const [paying, setPaying] = useState(false);
 
   async function handlePay() {
@@ -655,13 +685,18 @@ function PaymentBox({ f, set }: { f: Form; set: (k: FormKey, v: string) => void 
     await openRazorpayCheckout({
       amount: DEPOSIT_AMOUNT,
       purpose: "Partner Enrollment Advance Deposit",
-      learnerName: f.full_name || "Partner Applicant",
-      mobile: f.mobile,
-      email: f.email || "partner@laxmidriving.com",
+      learnerName: f?.full_name || "Partner Applicant",
+      mobile: f?.mobile || "",
+      email: f?.email || "partner@laxmidriving.com",
       description: `Laxmi Driving Training - Partner Advance ₹${DEPOSIT_AMOUNT}`,
       onSuccess: (res) => {
         setPaying(false);
-        set("payment_reference", res.razorpay_payment_id);
+        if (set) {
+          set("payment_reference", res.razorpay_payment_id);
+        }
+        if (onPaid) {
+          onPaid(res.razorpay_payment_id);
+        }
         toast.success(`Payment of ₹${DEPOSIT_AMOUNT.toLocaleString("en-IN")} successful!`);
       },
       onError: (err) => {
@@ -685,7 +720,7 @@ function PaymentBox({ f, set }: { f: Form; set: (k: FormKey, v: string) => void 
         </span>
       </div>
 
-      {f.payment_reference ? (
+      {f?.payment_reference ? (
         <div className="rounded-xl border border-success/40 bg-success/10 p-3 text-xs sm:text-sm text-success space-y-1">
           <p className="font-bold flex items-center gap-1.5">
             <CheckCircle2 className="size-4" /> Advance Payment Recorded
