@@ -59,7 +59,7 @@ export async function sendEmailCore(options: EmailDispatchOptions): Promise<{ su
 
   const resendApiKey = getSanitizedResendKey();
   const brevoApiKey = cleanToken(process.env["BREVO_API_KEY"]);
-  const senderName = options.senderName || "Laxmi Motor Driving School";
+  const senderName = options.senderName || "Laxmi Driving School";
 
   // 1. Resend HTTP API (Zero socket drops, 100% native on Cloudflare Workers / Edge)
   if (resendApiKey) {
@@ -354,16 +354,15 @@ Website: https://laxmidriving.com
         : `Booking Confirmed: Your ${vehicleType} Driving Training [Ref: #${bookingRef}]`;
 
       const customerPlainText = `
-LAXMI MOTOR DRIVING TRAINING SCHOOL - ${isPaid ? "PAYMENT & BOOKING CONFIRMATION" : "BOOKING CONFIRMATION"}
+Laxmi Driving TRAINING SCHOOL - ${isPaid ? "PAYMENT & BOOKING CONFIRMATION" : "BOOKING CONFIRMATION"}
 Plot No.-101, Palaspur, Main Road, PS.-Pattapur, Distt.-Ganjam, Odisha - 761013
 
 Namaste ${customerName},
 
-${
-  isPaid
-    ? `Thank you! We have successfully received your payment of ₹${amountPaid.toLocaleString("en-IN")} via Razorpay. Your driving training booking is confirmed and prioritized.`
-    : `Thank you for choosing Laxmi Motor Driving Training School! Your driving training enquiry has been received and confirmed.`
-}
+${isPaid
+          ? `Thank you! We have successfully received your payment of ₹${amountPaid.toLocaleString("en-IN")} via Razorpay. Your driving training booking is confirmed and prioritized.`
+          : `Thank you for choosing Laxmi Driving Training School! Your driving training enquiry has been received and confirmed.`
+        }
 
 YOUR BOOKING DETAILS:
 ------------------------------------------------
@@ -388,7 +387,7 @@ NEED HELP?
 • Website: https://laxmidriving.com
 
 Thank you,
-Laxmi Motor Driving Training School
+Laxmi Driving Training School
 `;
 
       const customerHtml = `
@@ -409,7 +408,7 @@ Laxmi Motor Driving Training School
           <tr>
             <td style="background: linear-gradient(135deg, #1E40E7 0%, #172554 100%); padding: 36px 30px; text-align: center;">
               <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                Laxmi Motor Driving Training School
+                Laxmi Driving Training School
               </h1>
               <p style="margin: 8px 0 0; color: #cbd5e1; font-size: 14px;">
                 Government Approved Driving Training · Distt.-Ganjam & Rayagada, Odisha
@@ -424,11 +423,10 @@ Laxmi Motor Driving Training School
                 Namaste <strong>${customerName}</strong>,
               </p>
               <p style="font-size: 15px; line-height: 1.6; margin: 0 0 24px; color: #475569;">
-                ${
-                  isPaid
-                    ? `Thank you! We have successfully received your payment of <strong>₹${amountPaid.toLocaleString("en-IN")}</strong> via Razorpay. Your driving lesson batch is confirmed and prioritized.`
-                    : `Thank you for choosing <strong>Laxmi Motor Driving Training School</strong>! Your driving training enquiry has been received and confirmed.`
-                }
+                ${isPaid
+          ? `Thank you! We have successfully received your payment of <strong>₹${amountPaid.toLocaleString("en-IN")}</strong> via Razorpay. Your driving lesson batch is confirmed and prioritized.`
+          : `Thank you for choosing <strong>Laxmi Driving Training School</strong>! Your driving training enquiry has been received and confirmed.`
+        }
               </p>
 
               <!-- Success Card -->
@@ -500,9 +498,8 @@ Laxmi Motor Driving Training School
                     ${isPaid ? `✓ PAID (₹${amountPaid.toLocaleString("en-IN")} via Razorpay)` : paymentChoice}
                   </td>
                 </tr>
-                ${
-                  isPaid && paymentId
-                    ? `<tr>
+                ${isPaid && paymentId
+          ? `<tr>
                   <td style="padding: 10px 16px; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">
                     Payment Transaction ID
                   </td>
@@ -510,11 +507,10 @@ Laxmi Motor Driving Training School
                     ${paymentId}
                   </td>
                 </tr>`
-                    : ""
-                }
-                ${
-                  message
-                    ? `<tr>
+          : ""
+        }
+                ${message
+          ? `<tr>
                   <td style="padding: 10px 16px; font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0;">
                     Special Notes
                   </td>
@@ -522,8 +518,8 @@ Laxmi Motor Driving Training School
                     ${message}
                   </td>
                 </tr>`
-                    : ""
-                }
+          : ""
+        }
               </table>
 
               <!-- Next Steps Card -->
@@ -566,7 +562,7 @@ Laxmi Motor Driving Training School
           <tr>
             <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 30px; text-align: center;">
               <p style="margin: 0 0 4px; font-size: 12px; color: #64748b; font-weight: 600;">
-                Laxmi Motor Driving Training School
+                Laxmi Driving Training School
               </p>
               <p style="margin: 0; font-size: 11px; color: #94a3b8;">
                 Plot No.-101, Palaspur, Main Road, PS.-Pattapur, Distt.-Ganjam, Odisha - 761013 · <a href="https://laxmidriving.com" style="color: #1E40E7; text-decoration: none;">laxmidriving.com</a>
@@ -583,7 +579,7 @@ Laxmi Motor Driving Training School
 `;
 
       const custRes = await sendEmailCore({
-        senderName: "Laxmi Motor Driving School",
+        senderName: "Laxmi Driving School",
         to: rawEmail,
         replyTo: "inofdriving@gmail.com",
         subject: customerSubject,
@@ -635,7 +631,7 @@ export async function sendBookingStatusEmailDirect(data: StatusUpdatePayload) {
   const mobile = data.mobile || "";
 
   const plainText = `
-LAXMI MOTOR DRIVING TRAINING SCHOOL - BOOKING STATUS UPDATE
+Laxmi Driving TRAINING SCHOOL - BOOKING STATUS UPDATE
 Plot No.-101, Palaspur, Main Road, PS.-Pattapur, Distt.-Ganjam, Odisha - 761013
 
 Namaste ${customerName},
@@ -649,17 +645,17 @@ ${preferredDate ? `Date & Time: ${preferredDate} ${preferredTime}\n` : ""}${mobi
 If you have questions, please call us at +91 98617 04224.
 
 Thank you,
-Laxmi Motor Driving Training School
+Laxmi Driving Training School
 `;
 
   const res = await sendEmailCore({
-    senderName: "Laxmi Motor Driving School",
+    senderName: "Laxmi Driving School",
     to: data.customerEmail,
     replyTo: "inofdriving@gmail.com",
     subject: `Booking Status Update: ${newStatus} [Ref: #${shortId}]`,
     text: plainText,
     html: `<div style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px;">
-        <h2 style="color: #1E40E7; margin-top: 0;">Laxmi Motor Driving Training School</h2>
+        <h2 style="color: #1E40E7; margin-top: 0;">Laxmi Driving Training School</h2>
         <p>Namaste <strong>${customerName}</strong>,</p>
         <p>Your driving lesson booking status is now: <strong style="color: #15803d; font-size: 16px;">${newStatus}</strong>.</p>
         <p>Booking Reference: <strong>#${shortId}</strong></p>

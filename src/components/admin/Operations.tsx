@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, RefreshCw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CreditCard, Download, RefreshCw, XCircle } from "lucide-react";
 import { BookingEditor, InstructorEditor } from "@/components/admin/AdminEditors";
 import { downloadCsv } from "@/lib/admin-export";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -592,6 +592,7 @@ function Partners({
     .every((d) => appDocs.some((doc) => doc.doc_type === d.id && doc.verified));
   const [note, setNote] = useState("");
   const [reason, setReason] = useState("");
+
   async function openDocument(path: string) {
     const { data, error } = await supabase.storage
       .from("partner-documents")
@@ -602,6 +603,7 @@ function Partners({
     }
     window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   }
+
   const updateApp = (changes: Record<string, unknown>) => {
     if (
       (changes["status"] === "Rejected" || changes["status"] === "Correction Required") &&
@@ -614,8 +616,110 @@ function Partners({
       changes["rejection_reason"] = reason.trim();
     if (app) save.mutate({ table: "partner_applications", id: app.id, changes });
   };
+
+  const notifyPartnerStatus = (newStatus: string, partnerId?: string, staffReason?: string) => {
+    if (!app?.email || !app.email.includes("@") || app.email.endsWith("@partner.laxmidriving.com")) {
+      return;
+    }
+    fetch("/api/send-partner-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        partnerEmail: app.email,
+        partnerName: app.full_name,
+        applicationNo: app.application_no || app.id.slice(0, 8),
+        newStatus,
+        partnerId,
+        reason: staffReason,
+        vehicleDetails: `${app.vehicle_type} ${app.vehicle_make} ${app.vehicle_model} (${app.registration_number})`,
+      }),
+    }).catch((err) => console.warn("Partner status email failed:", err));
+  };
+
+  const handleApprove = () => {
+    if (!app) return;
+    const missing: string[] = [];
+    if (app.payment_status !== "Verified") missing.push("Deposit Payment Verification");
+    if (!app.vehicle_verified) missing.push("Vehicle Inspection Verification");
+    if (!requiredDocsVerified) missing.push("All 6 Required Documents Verification");
+
+    if (missing.length > 0) {
+      toast.error(`Cannot approve yet. Missing: ${missing.join(", ")}`);
+      return;
+    }
+
+    const partnerId =
+      app.partner_id ||
+      `LDT-VP-${app.application_no?.replace(/\D/g, "").slice(-6) ?? app.id.slice(0, 6)}`;
+
+    updateApp({
+      status: "Approved",
+      partner_id: partnerId,
+    });
+    notifyPartnerStatus("Approved", partnerId);
+    toast.success(`Partner Approved! Assigned Partner ID: ${partnerId}`);
+  };
+
+  const handleDecline = () => {
+    if (!app) return;
+    if (!reason.trim()) {
+      toast.error("Please enter a reason in the 'Correction / rejection reason' box below before declining.");
+      return;
+    }
+    updateApp({
+      status: "Rejected",
+      rejection_reason: reason.trim(),
+    });
+    notifyPartnerStatus("Rejected", undefined, reason.trim());
+    toast.success("Application marked as Declined / Rejected.");
+  };
+
+  const handleRequestCorrections = () => {
+    if (!app) return;
+    if (!reason.trim()) {
+      toast.error("Please enter what needs correction in the reason box below.");
+      return;
+    }
+    updateApp({
+      status: "Correction Required",
+      rejection_reason: reason.trim(),
+    });
+    notifyPartnerStatus("Correction Required", undefined, reason.trim());
+    toast.success("Requested corrections from partner.");
+  };
+
+  const handleVerifyDeposit = () => {
+    if (!app) return;
+    updateApp({
+      payment_status: "Verified",
+      payment_verified_at: new Date().toISOString(),
+      payment_paid_at: new Date().toISOString(),
+    });
+    toast.success("Advance Deposit marked as Verified!");
+  };
+
+  const handleVerifyAllDocs = () => {
+    if (!app) return;
+    const unverified = appDocs.filter((d) => !d.verified);
+    if (!unverified.length) {
+      toast.info("All documents are already verified.");
+      return;
+    }
+    unverified.forEach((d) => {
+      save.mutate({
+        table: "partner_documents",
+        id: d.id,
+        changes: {
+          verified: true,
+          verified_at: new Date().toISOString(),
+        },
+      });
+    });
+    toast.success(`Verified ${unverified.length} documents.`);
+  };
+
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(230px,1fr)_minmax(0,2fr)]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(240px,1fr)_minmax(0,2.5fr)]">
       <div className="space-y-3">
         <Input
           aria-label="Search partners"
@@ -629,48 +733,212 @@ function Partners({
           choices={["All", ...applicationStatuses]}
           onChange={setStatusFilter}
         />
-        {filtered.map((p) => (
-          <Button
-            key={p.id}
-            variant={selected === p.id ? "default" : "outline"}
-            className="h-auto w-full justify-start whitespace-normal py-3 text-left"
-            onClick={() => {
-              setSelected(p.id);
-              setNote(p.admin_notes ?? "");
-              setReason(p.rejection_reason ?? "");
-            }}
-          >
-            {p.application_no ?? "Application"} · {p.full_name} · {p.status}
-          </Button>
-        ))}
-        {!filtered.length && (
-          <p className="text-sm text-muted-foreground">No matching partner applications.</p>
-        )}
+        <div className="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+          {filtered.map((p) => (
+            <Button
+              key={p.id}
+              variant={selected === p.id ? "default" : "outline"}
+              className="h-auto w-full justify-start whitespace-normal py-3 text-left flex flex-col items-start gap-1"
+              onClick={() => {
+                setSelected(p.id);
+                setNote(p.admin_notes ?? "");
+                setReason(p.rejection_reason ?? "");
+              }}
+            >
+              <div className="flex items-center justify-between w-full">
+                <span className="font-bold text-xs">{p.application_no ?? "Application"}</span>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    p.status === "Approved"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : p.status === "Rejected"
+                        ? "bg-rose-100 text-rose-800"
+                        : "bg-amber-100 text-amber-800"
+                  }`}
+                >
+                  {p.status}
+                </span>
+              </div>
+              <span className="font-semibold text-sm">{p.full_name}</span>
+              <span className="text-xs text-muted-foreground">
+                {p.vehicle_type} · {p.registration_number}
+              </span>
+            </Button>
+          ))}
+          {!filtered.length && (
+            <p className="text-sm text-muted-foreground p-3">No matching partner applications.</p>
+          )}
+        </div>
       </div>
-      {app && (
-        <div className="space-y-5 border-t border-border pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
-          <div>
-            <h2 className="text-xl font-bold">
-              {app.full_name} · {app.application_no}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {app.vehicle_type} · {app.registration_number} · {app.vehicle_make}{" "}
-              {app.vehicle_model}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {app.preferred_location} · {app.preferred_availability}
-            </p>
-            <a href={`tel:${app.mobile}`} className="text-sm text-primary">
-              {app.mobile}
-            </a>
-            <span className="mx-2">·</span>
-            <a href={`mailto:${app.email}`} className="text-sm text-primary">
-              {app.email}
-            </a>
+
+      {app ? (
+        <div className="space-y-6 border-t border-border pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+          {/* Header & Quick Action Buttons */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-extrabold">{app.full_name}</h2>
+                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-primary/10 text-primary">
+                  #{app.application_no || app.id.slice(0, 8)}
+                </span>
+                {app.partner_id && (
+                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800">
+                    ID: {app.partner_id}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {app.vehicle_type} · {app.registration_number} · {app.vehicle_make} {app.vehicle_model} ({app.manufacturing_year || "—"})
+              </p>
+              <div className="flex flex-wrap items-center gap-3 mt-2 text-xs">
+                <a href={`tel:${app.mobile}`} className="font-semibold text-primary hover:underline">
+                  📞 {app.mobile}
+                </a>
+                {app.email && (
+                  <a href={`mailto:${app.email}`} className="text-primary hover:underline">
+                    ✉️ {app.email}
+                  </a>
+                )}
+                <span className="text-muted-foreground">
+                  📍 {app.preferred_location} ({app.preferred_use || "Training"})
+                </span>
+              </div>
+            </div>
+
+            {/* Top Quick Actions */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <Button
+                variant="default"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm"
+                disabled={save.isPending || app.status === "Approved"}
+                onClick={handleApprove}
+              >
+                <CheckCircle2 className="mr-1.5 size-4" />
+                {app.status === "Approved" ? "Approved ✓" : "Approve Partner"}
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={save.isPending || app.status === "Rejected"}
+                onClick={handleDecline}
+              >
+                <XCircle className="mr-1.5 size-4" />
+                Decline / Reject
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-4">
+
+          {/* Verification Status Checklist */}
+          <div className="rounded-xl border p-4 bg-muted/30 space-y-2 text-xs">
+            <p className="font-bold text-foreground flex items-center justify-between">
+              <span>Verification Checklist:</span>
+              <span className="text-muted-foreground font-normal">
+                (All 3 must be green to approve)
+              </span>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div
+                className={`p-2.5 rounded-lg border flex items-center justify-between font-semibold ${
+                  app.payment_status === "Verified"
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                    : "bg-background border-border text-foreground"
+                }`}
+              >
+                <span>Deposit: {app.payment_status}</span>
+                {app.payment_status === "Verified" ? "✓" : "⏳"}
+              </div>
+              <div
+                className={`p-2.5 rounded-lg border flex items-center justify-between font-semibold ${
+                  app.vehicle_verified
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                    : "bg-background border-border text-foreground"
+                }`}
+              >
+                <span>Vehicle Inspected</span>
+                {app.vehicle_verified ? "✓" : "⏳"}
+              </div>
+              <div
+                className={`p-2.5 rounded-lg border flex items-center justify-between font-semibold ${
+                  requiredDocsVerified
+                    ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                    : "bg-background border-border text-foreground"
+                }`}
+              >
+                <span>Docs (6/6) Verified</span>
+                {requiredDocsVerified ? "✓" : "⏳"}
+              </div>
+            </div>
+          </div>
+
+          {/* Bank & Payment Details Card */}
+          <div className="rounded-xl border border-primary/20 bg-primary/[0.02] p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-sm flex items-center gap-2 text-foreground">
+                <CreditCard className="size-4 text-primary" /> Bank & Payment Information
+              </h3>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                    app.payment_status === "Verified"
+                      ? "bg-emerald-100 text-emerald-800"
+                      : app.payment_status === "Under Verification"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-amber-100 text-amber-800"
+                  }`}
+                >
+                  Deposit: {app.payment_status}
+                </span>
+                {app.payment_status !== "Verified" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+                    disabled={save.isPending}
+                    onClick={handleVerifyDeposit}
+                  >
+                    Mark Verified
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-2.5 bg-background rounded-lg border">
+                <span className="text-muted-foreground block text-[11px]">Account Holder Name:</span>
+                <span className="font-bold text-sm text-foreground">{app.bank_account_name || "—"}</span>
+              </div>
+              <div className="p-2.5 bg-background rounded-lg border">
+                <span className="text-muted-foreground block text-[11px]">Bank Name:</span>
+                <span className="font-bold text-sm text-foreground">{app.bank_name || "—"}</span>
+              </div>
+              <div className="p-2.5 bg-background rounded-lg border">
+                <span className="text-muted-foreground block text-[11px]">Account Number:</span>
+                <span className="font-mono font-bold text-sm text-foreground select-all">{app.bank_account_number || "—"}</span>
+              </div>
+              <div className="p-2.5 bg-background rounded-lg border">
+                <span className="text-muted-foreground block text-[11px]">IFSC Code:</span>
+                <span className="font-mono font-bold text-sm text-foreground select-all">{app.bank_ifsc || "—"}</span>
+              </div>
+              <div className="p-2.5 bg-background rounded-lg border">
+                <span className="text-muted-foreground block text-[11px]">UPI ID:</span>
+                <span className="font-mono font-semibold text-foreground select-all">{app.upi_id || "None provided"}</span>
+              </div>
+              <div className="p-2.5 bg-background rounded-lg border">
+                <span className="text-muted-foreground block text-[11px]">Advance Deposit:</span>
+                <span className="font-bold text-sm text-emerald-700">₹{(app.deposit_amount || 2000).toLocaleString("en-IN")}</span>
+              </div>
+              <div className="sm:col-span-2 p-2.5 bg-background rounded-lg border">
+                <span className="text-muted-foreground block text-[11px]">Transaction / Payment Reference:</span>
+                <span className="font-mono font-bold text-foreground select-all mt-0.5 block">
+                  {app.payment_reference || "No reference entered yet"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Controls: Status & Deposit Dropdowns */}
+          <div className="flex flex-wrap gap-4 items-end">
             <SelectField
-              label="Application"
+              label="Application Status"
               value={app.status}
               choices={applicationStatuses}
               onChange={(status) => {
@@ -681,23 +949,27 @@ function Partners({
                     !app.vehicle_verified)
                 ) {
                   toast.error(
-                    "Verify the deposit and all required documents before approving. Confirm the vehicle inspection separately.",
+                    "Verify the deposit, all required documents, and vehicle inspection before approving.",
                   );
                   return;
                 }
+                const partnerId =
+                  status === "Approved" && !app.partner_id
+                    ? `LDT-VP-${app.application_no?.replace(/\D/g, "").slice(-6) ?? app.id.slice(0, 6)}`
+                    : undefined;
+
                 updateApp({
                   status,
-                  ...(status === "Approved" && !app.partner_id
-                    ? {
-                        partner_id: `LDT-VP-${app.application_no?.replace(/\D/g, "").slice(-6) ?? app.id.slice(0, 6)}`,
-                      }
-                    : {}),
+                  ...(partnerId ? { partner_id: partnerId } : {}),
                 });
+                if (["Approved", "Rejected", "Correction Required"].includes(status)) {
+                  notifyPartnerStatus(status, partnerId, reason);
+                }
               }}
               disabled={save.isPending}
             />
             <SelectField
-              label="Deposit verification"
+              label="Deposit Status"
               value={app.payment_status}
               choices={paymentStatuses}
               onChange={(payment_status) =>
@@ -713,44 +985,53 @@ function Partners({
               }
               disabled={save.isPending}
             />
+            <label className="flex items-center gap-2 text-sm font-semibold pb-1">
+              <input
+                type="checkbox"
+                checked={app.vehicle_verified}
+                disabled={save.isPending}
+                onChange={(e) =>
+                  updateApp({
+                    vehicle_verified: e.target.checked,
+                    vehicle_verified_at: e.target.checked ? new Date().toISOString() : null,
+                  })
+                }
+              />
+              Vehicle inspected and verified
+            </label>
           </div>
-          <label className="flex items-center gap-2 text-sm font-semibold">
-            <input
-              type="checkbox"
-              checked={app.vehicle_verified}
-              disabled={save.isPending}
-              onChange={(e) =>
-                updateApp({
-                  vehicle_verified: e.target.checked,
-                  vehicle_verified_at: e.target.checked ? new Date().toISOString() : null,
-                })
-              }
-            />
-            Vehicle inspected and verified
-          </label>
-          <p className="text-sm">
-            ₹{app.deposit_amount} advance · Reference: {app.payment_reference || "Not provided"}.
-            Verify funds independently before marking verified. Verify the vehicle in person before
-            approval.
-          </p>
-          <div className="space-y-2">
-            <h3 className="font-semibold">Documents</h3>
-            {documents
-              .filter((d) => d.application_id === app.id)
-              .map((d) => (
+
+          {/* Documents Section */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-sm">Uploaded Documents</h3>
+              {appDocs.some((d) => !d.verified) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  disabled={save.isPending}
+                  onClick={handleVerifyAllDocs}
+                >
+                  Verify All Documents
+                </Button>
+              )}
+            </div>
+            <div className="space-y-2 border rounded-xl p-3 bg-background">
+              {appDocs.map((d) => (
                 <div
                   key={d.id}
-                  className="flex flex-wrap items-center justify-between gap-2 border-b py-2 text-sm"
+                  className="flex flex-wrap items-center justify-between gap-2 border-b last:border-b-0 py-2 text-sm"
                 >
                   <Button
                     variant="link"
-                    className="h-auto p-0"
+                    className="h-auto p-0 font-medium text-primary hover:underline text-left"
                     onClick={() => openDocument(d.file_path)}
                   >
-                    {documentTypes.find((t) => t.id === d.doc_type)?.label ?? d.doc_type} ·{" "}
-                    {d.file_name}
+                    📄 {documentTypes.find((t) => t.id === d.doc_type)?.label ?? d.doc_type} ·{" "}
+                    <span className="text-xs text-muted-foreground">{d.file_name}</span>
                   </Button>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold">
                     <input
                       type="checkbox"
                       checked={d.verified}
@@ -770,36 +1051,68 @@ function Partners({
                   </label>
                 </div>
               ))}
-            {!documents.some((d) => d.application_id === app.id) && (
-              <p className="text-sm text-muted-foreground">No documents uploaded yet.</p>
-            )}
+              {!appDocs.length && (
+                <p className="text-sm text-muted-foreground py-2 text-center">No documents uploaded yet.</p>
+              )}
+            </div>
           </div>
-          <label className="grid gap-2 text-sm font-semibold">
-            Internal notes
-            <Textarea value={note} onChange={(e) => setNote(e.target.value)} />
-          </label>
-          <Button
-            variant="outline"
-            disabled={save.isPending}
-            onClick={() => updateApp({ admin_notes: note })}
-          >
-            Save notes
-          </Button>
-          <label className="grid gap-2 text-sm font-semibold">
-            Correction / rejection reason (visible to partner)
-            <Textarea value={reason} onChange={(e) => setReason(e.target.value)} />
-          </label>
-          <Button
-            variant="outline"
-            disabled={save.isPending}
-            onClick={() => updateApp({ rejection_reason: reason || null })}
-          >
-            Save reason
-          </Button>
-          <p className="text-xs text-muted-foreground">
-            Approval requires separate document and vehicle verification. Bank details are
-            intentionally not shown here.
-          </p>
+
+          {/* Rejection / Correction Reason Box */}
+          <div className="space-y-2">
+            <label className="grid gap-2 text-sm font-semibold">
+              Correction / Rejection Reason (Visible to Partner)
+              <Textarea
+                placeholder="Explain why the application is declined or what documents/corrections are required..."
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={save.isPending}
+                onClick={() => updateApp({ rejection_reason: reason || null })}
+              >
+                Save Reason Only
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-amber-500 text-amber-700 hover:bg-amber-50"
+                disabled={save.isPending}
+                onClick={handleRequestCorrections}
+              >
+                <AlertTriangle className="mr-1.5 size-3.5" />
+                Send Correction Request Email
+              </Button>
+            </div>
+          </div>
+
+          {/* Internal Staff Notes */}
+          <div className="space-y-2">
+            <label className="grid gap-2 text-sm font-semibold">
+              Internal Staff Notes (Private)
+              <Textarea
+                placeholder="Private notes for staff only..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </label>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={save.isPending}
+              onClick={() => updateApp({ admin_notes: note })}
+            >
+              Save Internal Notes
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed p-12 text-center text-muted-foreground">
+          <p className="text-base font-semibold">Select an application to view details.</p>
+          <p className="text-xs mt-1">Review applicant information, vehicle details, bank credentials, and uploaded documents.</p>
         </div>
       )}
     </div>

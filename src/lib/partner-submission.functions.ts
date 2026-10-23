@@ -322,8 +322,48 @@ export const finalizePartnerApplication = createServerFn({ method: "POST" })
       }
     }
 
+    // Send email alert to admin (and confirmation to applicant)
+    try {
+      const { sendPartnerApplicationAlertEmailDirect } = await import("./email.server");
+      await sendPartnerApplicationAlertEmailDirect({
+        applicationNo: app.application_no ?? app.id.slice(0, 8).toUpperCase(),
+        fullName: app.full_name,
+        mobile: app.mobile,
+        email: app.email ?? "",
+        alternateMobile: app.alternate_mobile ?? "",
+        address: app.address ?? "",
+        city: app.city ?? "",
+        district: app.district ?? "",
+        state: app.state ?? "",
+        pincode: app.pincode ?? "",
+        vehicleType: app.vehicle_type,
+        registrationNumber: app.registration_number,
+        vehicleMake: app.vehicle_make,
+        vehicleModel: app.vehicle_model,
+        manufacturingYear: app.manufacturing_year,
+        fuelType: app.fuel_type,
+        transmission: app.transmission,
+        vehicleColor: app.vehicle_color ?? "",
+        ownershipStatus: app.ownership_status,
+        preferredLocation: app.preferred_location,
+        preferredUse: app.preferred_use,
+        preferredAvailability: app.preferred_availability,
+        bankAccountName: app.bank_account_name ?? "",
+        bankName: app.bank_name ?? "",
+        bankAccountNumber: app.bank_account_number ?? "",
+        bankIfsc: app.bank_ifsc ?? "",
+        upiId: app.upi_id ?? "",
+        depositAmount: app.deposit_amount ?? 2000,
+        paymentReference: data.reference || app.payment_reference || "",
+        paymentStatus: data.reference ? "Under Verification" : app.payment_status,
+      });
+    } catch (mailErr) {
+      console.error("[finalizePartnerApplication] Error sending notification email:", mailErr);
+    }
+
     return {
       no: app.application_no ?? app.id,
       ref: Boolean(data.reference || app.payment_reference),
     };
   });
+

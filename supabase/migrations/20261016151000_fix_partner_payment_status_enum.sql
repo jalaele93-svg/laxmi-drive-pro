@@ -1,6 +1,14 @@
+-- Drop broken legacy gateway trigger and function with invalid enum casts
+DROP TRIGGER IF EXISTS guard_partner_application ON public.partner_applications;
+DROP FUNCTION IF EXISTS public.guard_gateway_fields() CASCADE;
+
+-- Ensure staff role check functions have execute privileges
+GRANT EXECUTE ON FUNCTION public.is_staff(uuid) TO anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO anon, authenticated, service_role;
+
 -- Replace protect_partner_application_fields trigger function with text-coerced comparisons
--- to avoid enum cast failures on partner_payment_status.
-CREATE OR REPLACE FUNCTION public.protect_partner_application_fields() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$
+-- to avoid enum cast failures on partner_payment_status and permit draft-to-submitted transitions.
+CREATE OR REPLACE FUNCTION public.protect_partner_application_fields() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 BEGIN
  IF TG_OP='INSERT' AND NOT public.is_staff(auth.uid()) AND auth.role() IS DISTINCT FROM 'service_role' THEN
   IF NEW.user_id IS DISTINCT FROM auth.uid() 
@@ -20,14 +28,14 @@ BEGIN
  END IF;
  IF TG_OP='UPDATE' AND NOT public.is_staff(auth.uid()) AND auth.role() IS DISTINCT FROM 'service_role' THEN
   IF NEW.user_id IS DISTINCT FROM OLD.user_id 
-     OR NEW.status IS DISTINCT FROM OLD.status 
+     OR (NEW.status IS DISTINCT FROM OLD.status AND NOT (OLD.status = 'Draft' AND NEW.status IN ('Draft', 'Payment Pending', 'Submitted')))
      OR NEW.deposit_amount IS DISTINCT FROM OLD.deposit_amount 
      OR NEW.payment_verified_at IS DISTINCT FROM OLD.payment_verified_at 
      OR NEW.payment_paid_at IS DISTINCT FROM OLD.payment_paid_at 
      OR NEW.partner_id IS DISTINCT FROM OLD.partner_id 
      OR NEW.admin_notes IS DISTINCT FROM OLD.admin_notes 
      OR NEW.rejection_reason IS DISTINCT FROM OLD.rejection_reason 
-     OR NEW.terms_accepted IS DISTINCT FROM OLD.terms_accepted 
+     OR (NEW.terms_accepted IS DISTINCT FROM OLD.terms_accepted AND NOT (OLD.terms_accepted = false AND NEW.terms_accepted = true))
      OR NEW.vehicle_verified IS DISTINCT FROM OLD.vehicle_verified 
      OR NEW.vehicle_verified_at IS DISTINCT FROM OLD.vehicle_verified_at 
      OR (NEW.payment_status IS DISTINCT FROM OLD.payment_status AND NOT(OLD.payment_status::text = 'Pending' AND NEW.payment_status::text='Under Verification' AND nullif(btrim(NEW.payment_reference),'') IS NOT NULL)) THEN
@@ -39,3 +47,4 @@ BEGIN
  END IF;
  RETURN NEW;
 END; $$;
+
