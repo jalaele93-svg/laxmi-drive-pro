@@ -313,106 +313,93 @@ function AuthPage() {
         }
       } else {
         // Sign in mode
-        let targetEmail = "";
-        let cleanMobile = "";
+        const rawInput = mobile.trim() || email.trim();
+        if (!rawInput) throw new Error(staffLogin ? "Enter your staff email address." : "Enter your 10-digit mobile number or email.");
+
         if (staffLogin) {
-          targetEmail = email.trim();
-          if (!targetEmail) throw new Error("Enter your staff email address.");
+          const { error: staffErr } = await supabase.auth.signInWithPassword({
+            email: rawInput.trim().toLowerCase(),
+            password,
+          });
+          if (staffErr) throw staffErr;
         } else {
-          // Partner Login by Phone number or email
-          const rawInput = mobile.trim() || email.trim();
-          if (!rawInput) throw new Error("Enter your 10-digit mobile number.");
+          // Partner Login: resolve candidate emails and candidate passwords
+          const candidateEmails: string[] = [];
+          let cleanMobile = "";
 
           if (rawInput.includes("@")) {
-            targetEmail = rawInput.toLowerCase();
+            candidateEmails.push(rawInput.trim().toLowerCase());
           } else {
             cleanMobile = rawInput.replace(/\D/g, "").slice(-10);
             if (cleanMobile.length !== 10) {
-              throw new Error("Enter a valid 10-digit mobile number.");
+              throw new Error("Enter a valid 10-digit mobile number or email.");
             }
 
             // 1. Resolve authentic email from database via get_partner_auth_email RPC
             try {
               const { data: rpcEmail } = await supabase.rpc("get_partner_auth_email", { _mobile: cleanMobile });
               if (rpcEmail && typeof rpcEmail === "string") {
-                targetEmail = rpcEmail;
+                candidateEmails.push(rpcEmail.trim().toLowerCase());
               }
             } catch {
               // Ignore RPC lookup failure
             }
 
-            // 2. Fallback to localStorage or standard phone email format
-            if (!targetEmail) {
-              const cachedEmail =
-                localStorage.getItem(`ldt_partner_email_${cleanMobile}`) ||
-                localStorage.getItem(`ldt_partner_phone_${cleanMobile}`);
-              targetEmail = cachedEmail || `${cleanMobile}@partner.laxmidriving.com`;
+            // 2. Direct partner email
+            candidateEmails.push(`${cleanMobile}@partner.laxmidriving.com`);
+
+            // 3. LocalStorage
+            const cachedEmail =
+              localStorage.getItem(`ldt_partner_email_${cleanMobile}`) ||
+              localStorage.getItem(`ldt_partner_phone_${cleanMobile}`);
+            if (cachedEmail) {
+              candidateEmails.push(cachedEmail.trim().toLowerCase());
             }
           }
-        }
 
-        const authPassword = !staffLogin ? formatPartnerPassword(password) : password;
-
-        let signInRes = await supabase.auth.signInWithPassword({
-          email: targetEmail,
-          password: authPassword,
-        });
-
-        // Fallback 1: If custom email failed and user entered phone number, try cleanMobile@partner.laxmidriving.com
-        if (signInRes.error && !staffLogin && cleanMobile) {
-          const directPhoneEmail = `${cleanMobile}@partner.laxmidriving.com`;
-          if (targetEmail !== directPhoneEmail) {
-            const altRes = await supabase.auth.signInWithPassword({
-              email: directPhoneEmail,
-              password: authPassword,
-            });
-            if (!altRes.error) {
-              signInRes = altRes;
-              targetEmail = directPhoneEmail;
-            }
-          }
-        }
-
-        // Fallback 2: If 4-6 character PIN failed with transformed password, try raw password
-        if (signInRes.error && !staffLogin && password.length >= 4 && password.length <= 6 && authPassword !== password) {
-          const fallbackRes = await supabase.auth.signInWithPassword({
-            email: targetEmail,
+          const uniqueEmails = Array.from(new Set(candidateEmails));
+          const candidatePasswords = Array.from(new Set([
+            formatPartnerPassword(password),
             password,
-          });
-          if (!fallbackRes.error) {
-            signInRes = fallbackRes;
-          } else if (cleanMobile) {
-            const directPhoneEmail = `${cleanMobile}@partner.laxmidriving.com`;
-            if (targetEmail !== directPhoneEmail) {
-              const altRawRes = await supabase.auth.signInWithPassword({
-                email: directPhoneEmail,
-                password,
+          ]));
+
+          let signedIn = false;
+          let lastError: Error | null = null;
+
+          for (const testEmail of uniqueEmails) {
+            for (const testPassword of candidatePasswords) {
+              const res = await supabase.auth.signInWithPassword({
+                email: testEmail,
+                password: testPassword,
               });
-              if (!altRawRes.error) {
-                signInRes = altRawRes;
+              if (res.data?.session) {
+                signedIn = true;
+                if (cleanMobile) {
+                  try {
+                    localStorage.setItem(`ldt_partner_phone_${cleanMobile}`, testEmail);
+                  } catch {
+                    // Ignore storage error
+                  }
+                }
+                break;
+              }
+              if (res.error) {
+                lastError = res.error;
               }
             }
+            if (signedIn) break;
           }
-        }
 
-        // Friendly error if phone is not found or credentials wrong
-        if (signInRes.error && !staffLogin) {
-          const msg = signInRes.error.message.toLowerCase();
-          if (msg.includes("invalid") || msg.includes("not found")) {
+          if (!signedIn) {
+            if (lastError?.message?.toLowerCase().includes("email not confirmed")) {
+              throw new Error(
+                "Your account requires confirmation. Please check your email or contact support at +91 98617 04224.",
+              );
+            }
             throw new Error(
-              "Account not found or password incorrect. Please verify your 10-digit mobile number and PIN.",
+              "Account not found or password incorrect. Please verify your 10-digit mobile number and PIN, or click 'Register here' below to create your account.",
             );
           }
-          if (msg.includes("email not confirmed")) {
-            throw new Error(
-              "Your partner account requires confirmation. Please check your email or contact support at +91 98617 04224.",
-            );
-          }
-          throw signInRes.error;
-        }
-
-        if (signInRes.error) {
-          throw signInRes.error;
         }
       }
     } catch (error) {
@@ -507,21 +494,38 @@ function AuthPage() {
               {formError && (
                 <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 grid gap-3 text-sm text-destructive">
                   <p className="font-medium leading-relaxed">{formError}</p>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="w-full sm:w-auto font-semibold cursor-pointer"
-                    onClick={async () => {
-                      setBusy(true);
-                      await supabase.auth.signOut();
-                      setFormError("");
-                      setBusy(false);
-                      toast.info("Signed out of current account. You can now log in as Admin.");
-                    }}
-                  >
-                    Sign out of current account & Log In as Admin
-                  </Button>
+                  {staffLogin ? (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="w-full sm:w-auto font-semibold cursor-pointer"
+                      onClick={async () => {
+                        setBusy(true);
+                        await supabase.auth.signOut();
+                        setFormError("");
+                        setBusy(false);
+                        toast.info("Signed out of current account. You can now log in as Admin.");
+                      }}
+                    >
+                      Sign out of current account & Log In as Admin
+                    </Button>
+                  ) : (
+                    mode === "signin" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto font-semibold bg-background border-destructive/40 text-destructive hover:bg-destructive hover:text-destructive-foreground cursor-pointer"
+                        onClick={() => {
+                          setMode("signup");
+                          setFormError("");
+                        }}
+                      >
+                        Don't have an account yet? Register here →
+                      </Button>
+                    )
+                  )}
                 </div>
               )}
 
@@ -543,28 +547,31 @@ function AuthPage() {
               )}
 
               {/* Mobile Number field:
-                  - In Partner Login: Prominent phone number login
+                  - In Partner Login: Prominent phone number or email login
                   - In Signup: Required 10-digit mobile number
               */}
               {(!staffLogin || mode === "signup") && (
                 <div className="space-y-2">
                   <label htmlFor="mobile" className="block text-sm font-semibold">
-                    {mode === "signin" ? "Mobile Number" : "Mobile Number"}
+                    {mode === "signin" ? "Mobile Number or Email" : "Mobile Number"}
                   </label>
                   <input
                     id="mobile"
                     className={fieldClass}
                     required={!staffLogin || mode === "signup"}
-                    inputMode="numeric"
-                    type="tel"
-                    autoComplete={mode === "signin" ? "tel" : "tel"}
+                    type={mode === "signin" ? "text" : "tel"}
+                    autoComplete={mode === "signin" ? "username" : "tel"}
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
-                    placeholder="10-digit mobile number"
+                    placeholder={
+                      mode === "signin"
+                        ? "10-digit mobile number or email"
+                        : "10-digit mobile number"
+                    }
                   />
                   {mode === "signin" && !staffLogin && (
                     <p className="text-xs text-muted-foreground">
-                      Enter your 10-digit registered mobile number.
+                      Enter your 10-digit registered mobile number or email address.
                     </p>
                   )}
                 </div>
@@ -573,7 +580,7 @@ function AuthPage() {
               {/* Email field:
                   - In Staff mode: Required email
                   - In Partner Signup: Optional email
-                  - In Partner Signin: Hidden (partner logs in with Phone)
+                  - In Partner Signin: Hidden (partner logs in with Phone or Email in top field)
               */}
               {(staffLogin || mode === "signup") && (
                 <div className="space-y-2">
@@ -593,7 +600,7 @@ function AuthPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={staffLogin ? "name@example.com" : "Optional (for password reset)"}
+                    placeholder={staffLogin ? "name@example.com" : "Optional (for password reset & updates)"}
                   />
                 </div>
               )}
@@ -604,7 +611,7 @@ function AuthPage() {
                   <label htmlFor="password" className="block text-sm font-semibold">
                     {!staffLogin ? "Password / PIN" : "Password"}
                   </label>
-                  {!staffLogin && (
+                  {!staffLogin && mode === "signup" && (
                     <span className="text-xs text-muted-foreground">4 to 6 characters</span>
                   )}
                 </div>
@@ -614,13 +621,14 @@ function AuthPage() {
                   className={fieldClass}
                   required
                   minLength={staffLogin ? (mode === "signup" ? 12 : 6) : 4}
-                  maxLength={!staffLogin ? 6 : undefined}
                   autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={
                     !staffLogin
-                      ? "4 to 6 character password or PIN"
+                      ? mode === "signup"
+                        ? "4 to 6 character PIN or password"
+                        : "Enter your PIN or password"
                       : mode === "signup"
                         ? "At least 12 characters"
                         : "Your password"
