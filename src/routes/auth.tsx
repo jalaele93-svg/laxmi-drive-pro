@@ -261,12 +261,20 @@ function AuthPage() {
 
         // Ensure partner's chosen PIN is active in the database
         // (Even if the user existed previously in Supabase auth, this ensures their new PIN takes effect immediately)
-        if (!staffLogin && cleanMobile) {
+        if (!staffLogin) {
           try {
-            await supabase.rpc("set_partner_pin_by_mobile", {
-              _mobile: cleanMobile,
-              _pin: password,
-            });
+            if (hasCustomEmail) {
+              await supabase.rpc("set_user_password_by_email", {
+                _email: targetEmail,
+                _password: password,
+              });
+            }
+            if (cleanMobile) {
+              await supabase.rpc("set_partner_pin_by_mobile", {
+                _mobile: cleanMobile,
+                _pin: password,
+              });
+            }
           } catch (pinErr) {
             console.warn("Could not set partner PIN via RPC:", pinErr);
           }
@@ -668,50 +676,82 @@ function AuthPage() {
                 )}
                 {!staffLogin && mode === "signin" && (
                   <div className="flex justify-between items-center pt-1 text-xs">
-                    <span className="text-muted-foreground">Forgot PIN?</span>
+                    <span className="text-muted-foreground">Forgot PIN / Password?</span>
                     <button
                       type="button"
                       disabled={busy}
                       onClick={async () => {
-                        const cleanMob = mobile.replace(/\D/g, "").slice(-10);
-                        if (cleanMob.length !== 10) {
-                          toast.error("Please enter your 10-digit mobile number above first.");
+                        const raw = mobile.trim();
+                        if (!raw) {
+                          toast.error("Please enter your 10-digit mobile number or email above first.");
                           return;
                         }
-                        if (password.length < 4 || password.length > 6) {
-                          toast.error("Type your new 4 to 6 digit PIN in the box above, then click here.");
+                        if (password.length < 4) {
+                          toast.error("Type your new PIN or password in the box above, then click here.");
                           return;
                         }
                         setBusy(true);
                         try {
-                          const { data: ok, error: rpcErr } = await supabase.rpc("set_partner_pin_by_mobile", {
-                            _mobile: cleanMob,
-                            _pin: password,
-                          });
-                          if (rpcErr || !ok) {
-                            throw new Error(rpcErr?.message || "Account not found for this mobile. Click 'Register here' below to create it.");
+                          let ok = false;
+                          if (raw.includes("@")) {
+                            const { data, error } = await supabase.rpc("set_user_password_by_email", {
+                              _email: raw.toLowerCase(),
+                              _password: password,
+                            });
+                            if (error || !data) throw new Error(error?.message || "Account not found for this email. Click 'Register here' below to create it.");
+                            ok = Boolean(data);
+                          } else {
+                            const cleanMob = raw.replace(/\D/g, "").slice(-10);
+                            if (cleanMob.length !== 10) {
+                              toast.error("Please enter a valid 10-digit mobile number or email.");
+                              return;
+                            }
+                            const { data, error } = await supabase.rpc("set_partner_pin_by_mobile", {
+                              _mobile: cleanMob,
+                              _pin: password,
+                            });
+                            if (error || !data) throw new Error(error?.message || "Account not found for this mobile. Click 'Register here' below to create it.");
+                            ok = Boolean(data);
                           }
-                          const authPwd = formatPartnerPassword(password);
-                          const targetEm = `${cleanMob}@partner.laxmidriving.com`;
-                          const { data: signInRes } = await supabase.auth.signInWithPassword({
-                            email: targetEm,
-                            password: authPwd,
-                          });
-                          if (signInRes?.session) {
-                            toast.success("PIN updated successfully! You are now logged in.");
-                            await navigate({ to: target, replace: true });
-                            return;
+
+                          if (ok) {
+                            const authPwd = formatPartnerPassword(password);
+                            let testEmails: string[] = [];
+                            if (raw.includes("@")) {
+                              testEmails = [raw.toLowerCase()];
+                            } else {
+                              const cleanMob = raw.replace(/\D/g, "").slice(-10);
+                              testEmails.push(`${cleanMob}@partner.laxmidriving.com`);
+                              try {
+                                const { data: rpcEm } = await supabase.rpc("get_partner_auth_email", { _mobile: cleanMob });
+                                if (rpcEm) testEmails.push(rpcEm);
+                              } catch {}
+                            }
+
+                            for (const em of Array.from(new Set(testEmails))) {
+                              for (const pwd of [authPwd, password]) {
+                                const { data: sRes } = await supabase.auth.signInWithPassword({
+                                  email: em,
+                                  password: pwd,
+                                });
+                                if (sRes?.session) {
+                                  toast.success("Password / PIN updated successfully! You are logged in.");
+                                  await navigate({ to: target, replace: true });
+                                  return;
+                                }
+                              }
+                            }
+                            toast.success("Password updated successfully! Please click Sign In.");
                           }
-                          toast.success("PIN updated successfully! Please click Sign In.");
                         } catch (err) {
-                          toast.error(err instanceof Error ? err.message : "Failed to update PIN.");
+                          toast.error(err instanceof Error ? err.message : "Failed to update password.");
                         } finally {
                           setBusy(false);
                         }
                       }}
                       className="text-primary hover:underline font-semibold cursor-pointer"
                     >
-                      Update PIN & Sign In →
+                      Update Password & Sign In →
                     </button>
                   </div>
                 )}
