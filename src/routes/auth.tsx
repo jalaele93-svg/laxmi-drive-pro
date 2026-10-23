@@ -259,6 +259,19 @@ function AuthPage() {
         });
         if (error) throw error;
 
+        // Ensure partner's chosen PIN is active in the database
+        // (Even if the user existed previously in Supabase auth, this ensures their new PIN takes effect immediately)
+        if (!staffLogin && cleanMobile) {
+          try {
+            await supabase.rpc("set_partner_pin_by_mobile", {
+              _mobile: cleanMobile,
+              _pin: password,
+            });
+          } catch (pinErr) {
+            console.warn("Could not set partner PIN via RPC:", pinErr);
+          }
+        }
+
         // If email was provided, dispatch welcome & activation email via our verified mail service
         if (hasCustomEmail) {
           try {
@@ -650,6 +663,55 @@ function AuthPage() {
                       className="text-xs text-primary hover:underline font-semibold cursor-pointer"
                     >
                       Forgot / Need to set password? Send reset link
+                    </button>
+                  </div>
+                )}
+                {!staffLogin && mode === "signin" && (
+                  <div className="flex justify-between items-center pt-1 text-xs">
+                    <span className="text-muted-foreground">Forgot PIN?</span>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={async () => {
+                        const cleanMob = mobile.replace(/\D/g, "").slice(-10);
+                        if (cleanMob.length !== 10) {
+                          toast.error("Please enter your 10-digit mobile number above first.");
+                          return;
+                        }
+                        if (password.length < 4 || password.length > 6) {
+                          toast.error("Type your new 4 to 6 digit PIN in the box above, then click here.");
+                          return;
+                        }
+                        setBusy(true);
+                        try {
+                          const { data: ok, error: rpcErr } = await supabase.rpc("set_partner_pin_by_mobile", {
+                            _mobile: cleanMob,
+                            _pin: password,
+                          });
+                          if (rpcErr || !ok) {
+                            throw new Error(rpcErr?.message || "Account not found for this mobile. Click 'Register here' below to create it.");
+                          }
+                          const authPwd = formatPartnerPassword(password);
+                          const targetEm = `${cleanMob}@partner.laxmidriving.com`;
+                          const { data: signInRes } = await supabase.auth.signInWithPassword({
+                            email: targetEm,
+                            password: authPwd,
+                          });
+                          if (signInRes?.session) {
+                            toast.success("PIN updated successfully! You are now logged in.");
+                            await navigate({ to: target, replace: true });
+                            return;
+                          }
+                          toast.success("PIN updated successfully! Please click Sign In.");
+                        } catch (err) {
+                          toast.error(err instanceof Error ? err.message : "Failed to update PIN.");
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
+                      className="text-primary hover:underline font-semibold cursor-pointer"
+                    >
+                      Update PIN & Sign In →
                     </button>
                   </div>
                 )}
