@@ -108,10 +108,9 @@ export async function sendEmailCore(options: EmailDispatchOptions): Promise<{ su
         return { success: true, messageId: attempt.data.id };
       }
 
-      return { success: false, error: attempt.data?.message || "Resend email delivery failed." };
+      console.warn("[Resend primary attempt unfulfilled, falling through to SMTP]", attempt.data?.message);
     } catch (err: unknown) {
-      console.error("[Resend Error]", err);
-      return { success: false, error: err instanceof Error ? err.message : "Resend request error." };
+      console.error("[Resend Error, falling through to SMTP]", err);
     }
   }
 

@@ -106,6 +106,25 @@ export default {
         }
       }
 
+      if (url.pathname === "/api/send-partner-welcome" && request.method === "POST") {
+        try {
+          const body = await request.json();
+          const { sendPartnerWelcomeEmailDirect } = await import("./lib/email.server");
+          const res = await sendPartnerWelcomeEmailDirect(body);
+          return new Response(JSON.stringify(res), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        } catch (err: unknown) {
+          console.error("[API send-partner-welcome Error]", err);
+          const msg = err instanceof Error ? err.message : "Failed to process partner welcome email";
+          return new Response(JSON.stringify({ success: false, error: msg }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+      }
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

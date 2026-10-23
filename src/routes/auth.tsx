@@ -149,14 +149,26 @@ function AuthPage() {
     setBusy(true);
     setFormError("");
     try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email: address,
-        options: { emailRedirectTo: confirmationUrl() },
-      });
-      if (error) throw error;
+      if (staffLogin) {
+        const { error } = await supabase.auth.resend({
+          type: "signup",
+          email: address,
+          options: { emailRedirectTo: confirmationUrl() },
+        });
+        if (error) throw error;
+      } else {
+        await fetch("/api/send-partner-welcome", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: address,
+            fullName: fullName.trim() || "Vehicle Partner",
+            mobile: mobile.trim(),
+          }),
+        });
+      }
       setResendAfter(Date.now() + 60_000);
-      toast.success("Confirmation requested. Check your inbox and spam folder.");
+      toast.success("Confirmation email resent. Check your inbox and spam folder.");
     } catch (error) {
       setFormError(
         error instanceof Error ? error.message : "Could not resend the confirmation email.",
@@ -212,16 +224,19 @@ function AuthPage() {
           }
         }
 
+        const hasCustomEmail = Boolean(!staffLogin && email.trim() && email.includes("@"));
         const targetEmail = staffLogin
           ? ownerEmail
-          : email.trim() || `${cleanMobile}@partner.laxmidriving.com`;
+          : hasCustomEmail
+            ? email.trim().toLowerCase()
+            : `${cleanMobile}@partner.laxmidriving.com`;
 
         // Cache mapping in local storage so this browser can resolve phone to email
         if (!staffLogin && cleanMobile) {
           try {
             localStorage.setItem(`ldt_partner_phone_${cleanMobile}`, targetEmail);
-            if (email.trim()) {
-              localStorage.setItem(`ldt_partner_email_${cleanMobile}`, email.trim());
+            if (hasCustomEmail) {
+              localStorage.setItem(`ldt_partner_email_${cleanMobile}`, targetEmail);
             }
           } catch {
             // Ignore storage errors
@@ -244,27 +259,54 @@ function AuthPage() {
         });
         if (error) throw error;
 
-        // If email was provided, ask user to check their email
-        if (email.trim() || staffLogin) {
+        // If email was provided, dispatch welcome & activation email via our verified mail service
+        if (hasCustomEmail) {
+          try {
+            await fetch("/api/send-partner-welcome", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: targetEmail,
+                fullName: fullName.trim(),
+                mobile: cleanMobile,
+              }),
+            });
+          } catch (mailErr) {
+            console.warn("Could not dispatch welcome email:", mailErr);
+          }
+        }
+
+        // Auto-login since database trigger auto-confirms partner accounts
+        const { data: signInData, error: autoSignInError } = await supabase.auth.signInWithPassword({
+          email: targetEmail,
+          password: authPassword,
+        });
+
+        if (signInData?.session) {
+          if (hasCustomEmail) {
+            toast.success(`Account created! Welcome email sent to ${targetEmail}`);
+          } else {
+            toast.success("Partner account created and logged in successfully!");
+          }
+          await navigate({ to: target, replace: true });
+          return;
+        }
+
+        // If staff signup, show confirmation screen
+        if (staffLogin) {
+          setConfirmationEmail(targetEmail);
+          setPassword("");
+          setResendAfter(Date.now() + 60_000);
+          return;
+        }
+
+        // If email was provided, inform user and show confirmation status
+        if (hasCustomEmail) {
+          toast.success(`Account created! Welcome email sent to ${targetEmail}.`);
           setConfirmationEmail(targetEmail);
           setPassword("");
           setResendAfter(Date.now() + 60_000);
         } else {
-          // Partner account created with phone number
-          const { data: signInData, error: autoSignInError } = await supabase.auth.signInWithPassword({
-            email: targetEmail,
-            password: authPassword,
-          });
-          if (signInData?.session) {
-            toast.success("Partner account created and logged in successfully!");
-            await navigate({ to: target, replace: true });
-            return;
-          }
-          if (autoSignInError?.message?.toLowerCase().includes("email not confirmed")) {
-            throw new Error(
-              "Account created! To sign in directly with your mobile number without email verification, disable 'Confirm email' in Supabase Dashboard (Authentication -> Providers -> Email), or provide your real email above to receive a verification link.",
-            );
-          }
           toast.success("Partner account created! You can now sign in with your mobile number.");
           setMode("signin");
           setPassword("");
@@ -272,25 +314,40 @@ function AuthPage() {
       } else {
         // Sign in mode
         let targetEmail = "";
+        let cleanMobile = "";
         if (staffLogin) {
           targetEmail = email.trim();
           if (!targetEmail) throw new Error("Enter your staff email address.");
         } else {
-          // Partner Login by Phone number
+          // Partner Login by Phone number or email
           const rawInput = mobile.trim() || email.trim();
           if (!rawInput) throw new Error("Enter your 10-digit mobile number.");
 
           if (rawInput.includes("@")) {
             targetEmail = rawInput.toLowerCase();
           } else {
-            const cleanMobile = rawInput.replace(/\D/g, "").slice(-10);
+            cleanMobile = rawInput.replace(/\D/g, "").slice(-10);
             if (cleanMobile.length !== 10) {
               throw new Error("Enter a valid 10-digit mobile number.");
             }
-            const cachedEmail =
-              localStorage.getItem(`ldt_partner_email_${cleanMobile}`) ||
-              localStorage.getItem(`ldt_partner_phone_${cleanMobile}`);
-            targetEmail = cachedEmail || `${cleanMobile}@partner.laxmidriving.com`;
+
+            // 1. Resolve authentic email from database via get_partner_auth_email RPC
+            try {
+              const { data: rpcEmail } = await supabase.rpc("get_partner_auth_email", { _mobile: cleanMobile });
+              if (rpcEmail && typeof rpcEmail === "string") {
+                targetEmail = rpcEmail;
+              }
+            } catch {
+              // Ignore RPC lookup failure
+            }
+
+            // 2. Fallback to localStorage or standard phone email format
+            if (!targetEmail) {
+              const cachedEmail =
+                localStorage.getItem(`ldt_partner_email_${cleanMobile}`) ||
+                localStorage.getItem(`ldt_partner_phone_${cleanMobile}`);
+              targetEmail = cachedEmail || `${cleanMobile}@partner.laxmidriving.com`;
+            }
           }
         }
 
@@ -301,36 +358,60 @@ function AuthPage() {
           password: authPassword,
         });
 
-        // If 6-character PIN failed with transformed password, try raw password for backwards compatibility
-        if (signInRes.error && !staffLogin && password.length === 6 && authPassword !== password) {
+        // Fallback 1: If custom email failed and user entered phone number, try cleanMobile@partner.laxmidriving.com
+        if (signInRes.error && !staffLogin && cleanMobile) {
+          const directPhoneEmail = `${cleanMobile}@partner.laxmidriving.com`;
+          if (targetEmail !== directPhoneEmail) {
+            const altRes = await supabase.auth.signInWithPassword({
+              email: directPhoneEmail,
+              password: authPassword,
+            });
+            if (!altRes.error) {
+              signInRes = altRes;
+              targetEmail = directPhoneEmail;
+            }
+          }
+        }
+
+        // Fallback 2: If 4-6 character PIN failed with transformed password, try raw password
+        if (signInRes.error && !staffLogin && password.length >= 4 && password.length <= 6 && authPassword !== password) {
           const fallbackRes = await supabase.auth.signInWithPassword({
             email: targetEmail,
             password,
           });
           if (!fallbackRes.error) {
             signInRes = fallbackRes;
+          } else if (cleanMobile) {
+            const directPhoneEmail = `${cleanMobile}@partner.laxmidriving.com`;
+            if (targetEmail !== directPhoneEmail) {
+              const altRawRes = await supabase.auth.signInWithPassword({
+                email: directPhoneEmail,
+                password,
+              });
+              if (!altRawRes.error) {
+                signInRes = altRawRes;
+              }
+            }
           }
         }
 
-        // Friendly error if phone is not found or user registered with email
-        if (signInRes.error && !staffLogin && targetEmail.endsWith("@partner.laxmidriving.com")) {
+        // Friendly error if phone is not found or credentials wrong
+        if (signInRes.error && !staffLogin) {
           const msg = signInRes.error.message.toLowerCase();
           if (msg.includes("invalid") || msg.includes("not found")) {
             throw new Error(
               "Account not found or password incorrect. Please verify your 10-digit mobile number and PIN.",
             );
           }
+          if (msg.includes("email not confirmed")) {
+            throw new Error(
+              "Your partner account requires confirmation. Please check your email or contact support at +91 98617 04224.",
+            );
+          }
+          throw signInRes.error;
         }
 
         if (signInRes.error) {
-          const msg = signInRes.error.message.toLowerCase();
-          if (msg.includes("email not confirmed")) {
-            throw new Error(
-              targetEmail.endsWith("@partner.laxmidriving.com")
-                ? "Your mobile partner account needs email confirmation. In Supabase Dashboard, disable 'Confirm email' under Authentication -> Providers -> Email, or sign in using your verified email address."
-                : "Please check your inbox and click the confirmation link before signing in.",
-            );
-          }
           throw signInRes.error;
         }
       }

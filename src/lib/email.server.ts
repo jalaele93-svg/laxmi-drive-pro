@@ -722,35 +722,32 @@ export async function sendPartnerStatusNotificationEmailDirect(data: PartnerStat
                 <span style="font-size: 20px; font-weight: 800; color: ${badgeColor};">
                   ${data.newStatus}
                 </span>
-                ${
-                  data.partnerId
-                    ? `<p style="margin: 6px 0 0; font-size: 14px; font-weight: 700; color: #1e40af;">Official Partner ID: ${data.partnerId}</p>`
-                    : ""
-                }
+                ${data.partnerId
+      ? `<p style="margin: 6px 0 0; font-size: 14px; font-weight: 700; color: #1e40af;">Official Partner ID: ${data.partnerId}</p>`
+      : ""
+    }
               </div>
 
-              ${
-                data.reason
-                  ? `<div style="background-color: #f8fafc; border-left: 4px solid ${badgeColor}; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #334155;">
+              ${data.reason
+      ? `<div style="background-color: #f8fafc; border-left: 4px solid ${badgeColor}; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #334155;">
                 <strong>Staff Note / Reason:</strong>
                 <p style="margin: 6px 0 0; color: #475569;">${data.reason}</p>
               </div>`
-                  : ""
-              }
+      : ""
+    }
 
-              ${
-                isApproved
-                  ? `<p style="font-size: 14px; line-height: 1.6; color: #334155;">
+              ${isApproved
+      ? `<p style="font-size: 14px; line-height: 1.6; color: #334155;">
                 We are pleased to welcome you as an authorized Vehicle Partner with Laxmi Driving Training! Your vehicle and documents have been verified and approved. Our operations coordinator will contact you to schedule upcoming training assignments.
               </p>`
-                  : isCorrection
-                    ? `<p style="font-size: 14px; line-height: 1.6; color: #334155;">
+      : isCorrection
+        ? `<p style="font-size: 14px; line-height: 1.6; color: #334155;">
                 Please log into your Partner Dashboard to review the required corrections and re-upload the requested documents so we can complete your verification.
               </p>`
-                    : `<p style="font-size: 14px; line-height: 1.6; color: #334155;">
+        : `<p style="font-size: 14px; line-height: 1.6; color: #334155;">
                 If you have questions regarding this decision or wish to submit an appeal, please contact our support desk.
               </p>`
-              }
+    }
 
               <div style="text-align: center; margin: 24px 0;">
                 <a href="https://laxmidriving.com/partner-dashboard" style="display: inline-block; background: #1e40af; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700; padding: 10px 24px; border-radius: 6px;">
@@ -789,5 +786,137 @@ export const sendPartnerStatusNotificationEmail = createServerFn({ method: "POST
   .validator((data: unknown) => partnerStatusNotificationSchema.parse(data))
   .handler(async ({ data }) => {
     return await sendPartnerStatusNotificationEmailDirect(data);
+  });
+
+export const partnerWelcomeSchema = z.object({
+  email: z.string().trim().email(),
+  fullName: z.string().default("Partner Applicant"),
+  mobile: z.string().default(""),
+});
+
+export type PartnerWelcomeData = z.infer<typeof partnerWelcomeSchema>;
+
+export async function sendPartnerWelcomeEmailDirect(data: PartnerWelcomeData) {
+  const { sendEmailCore } = await import("./booking-email.server");
+
+  const recipient = data.email.trim();
+  if (!recipient || recipient.endsWith("@partner.laxmidriving.com")) {
+    return { success: false, error: "No external email address provided." };
+  }
+
+  const name = data.fullName.trim() || "Vehicle Partner";
+  const mobile = data.mobile.trim();
+  const subject = `🚗 Welcome to Laxmi Driving Training - Partner Account Activated!`;
+
+  const text = `
+Hello ${name},
+
+Welcome to Laxmi Driving Training School Vehicle Partner Network!
+
+Your partner account has been created and activated successfully.
+${mobile ? `• Registered Mobile: ${mobile}\n` : ""}• Registered Email: ${recipient}
+
+You can now log in to complete your vehicle onboarding, upload documents (RC, Insurance, PUC, Driving Licence), and track your payout earnings at:
+https://laxmidriving.com/partner-apply
+
+If you ever need assistance, our support team is available at:
+Phone / WhatsApp: +91 98617 04224
+Email: inofdriving@gmail.com
+
+Safe driving,
+Laxmi Driving Training School
+`;
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Partner Account Activated</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding: 24px 8px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 580px; background-color: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 18px rgba(0,0,0,0.08);" cellspacing="0" cellpadding="0">
+          <tr>
+            <td style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 28px 24px; text-align: center;">
+              <span style="display: inline-block; background: #e0e7ff; color: #1e3a8a; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; padding: 4px 10px; border-radius: 9999px; margin-bottom: 8px;">
+                Vehicle Partner Network
+              </span>
+              <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800;">
+                Partner Account Activated!
+              </h1>
+              <p style="margin: 6px 0 0; color: #94a3b8; font-size: 13px;">
+                Laxmi Driving Training School
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color: #ecfdf5; border-bottom: 1px solid #a7f3d0; padding: 12px 24px; text-align: center;">
+              <p style="margin: 0; font-size: 13px; font-weight: 700; color: #065f46;">
+                ✓ Your account is active and ready to use
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 24px;">
+              <p style="margin: 0 0 16px; font-size: 15px; color: #1e293b;">
+                Hello <strong>${name}</strong>,
+              </p>
+              <p style="font-size: 14px; line-height: 1.6; color: #475569; margin: 0 0 16px;">
+                Welcome to the <strong>Laxmi Driving Training</strong> Partner Program! Your account has been registered and activated. You can sign in anytime using your <strong>10-digit mobile number</strong> or email.
+              </p>
+
+              <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin: 20px 0;">
+                <h3 style="margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; font-weight: 700;">
+                  Your Partner Credentials
+                </h3>
+                <table role="presentation" width="100%" style="font-size: 13px; line-height: 1.8;">
+                  ${mobile ? `<tr><td style="color: #64748b; width: 40%;">Mobile Number:</td><td style="font-weight: 700; color: #0f172a;">${mobile}</td></tr>` : ""}
+                  <tr><td style="color: #64748b;">Registered Email:</td><td style="font-weight: 700; color: #0f172a;">${recipient}</td></tr>
+                  <tr><td style="color: #64748b;">Sign-in Method:</td><td style="color: #0f172a;">10-digit Mobile + your 4-6 digit PIN</td></tr>
+                </table>
+              </div>
+
+              <div style="text-align: center; margin: 28px 0 16px;">
+                <a href="https://laxmidriving.com/partner-apply" style="display: inline-block; background: #2563eb; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 12px 28px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37,99,235,0.3);">
+                  Continue Partner Application →
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 24px; text-align: center;">
+              <p style="margin: 0; font-size: 12px; color: #64748b;">
+                Need help? Call or WhatsApp us at <strong>+91 98617 04224</strong> · <a href="mailto:inofdriving@gmail.com" style="color: #2563eb; text-decoration: none;">inofdriving@gmail.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+  return await sendEmailCore({
+    senderName: "Laxmi Partner Network",
+    to: recipient,
+    replyTo: "inofdriving@gmail.com",
+    subject,
+    text,
+    html,
+  });
+}
+
+export const sendPartnerWelcomeEmail = createServerFn({ method: "POST" })
+  .validator((data: unknown) => partnerWelcomeSchema.parse(data))
+  .handler(async ({ data }) => {
+    return await sendPartnerWelcomeEmailDirect(data);
   });
 
