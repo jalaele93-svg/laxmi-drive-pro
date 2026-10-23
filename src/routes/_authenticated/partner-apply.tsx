@@ -115,7 +115,8 @@ function validate(step: number, f: Form, files: Record<string, File>): string | 
     )
       return "Please fill all required vehicle fields.";
     const y = Number(f.manufacturing_year);
-    if (!(y >= 1990 && y <= new Date().getFullYear())) return "Enter a valid manufacturing year.";
+    const maxYear = Math.max(new Date().getFullYear(), 2026) + 1;
+    if (!(y >= 1990 && y <= maxYear)) return "Enter a valid manufacturing year.";
   }
   if (step === 2) {
     const missing = documentTypes.find((d) => d.required && !files[d.id]);

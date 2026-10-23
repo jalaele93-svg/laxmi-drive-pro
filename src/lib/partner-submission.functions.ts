@@ -24,7 +24,11 @@ const details = z.object({
   registration_number: text,
   vehicle_make: text,
   vehicle_model: text,
-    manufacturing_year: z.coerce.number().int().min(1990).max(new Date().getFullYear() + 1),
+    manufacturing_year: z.coerce
+      .number()
+      .int()
+      .min(1990, { message: "Manufacturing year must be 1990 or later" })
+      .max(2035, { message: "Enter a valid manufacturing year" }),
     fuel_type: z.enum(["Petrol", "Diesel", "CNG", "Electric", "Hybrid"]),
     transmission: z.enum(["Manual", "Automatic", "Gearless (Scooter)"]),
     vehicle_color: z.string().max(100),
